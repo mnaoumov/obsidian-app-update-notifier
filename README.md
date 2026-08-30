@@ -60,7 +60,7 @@ Checks run once at startup and then hourly, matching Obsidian's own updater; the
 
 ## Installation
 
-The plugin is not yet listed in [the official Community Plugins repository](https://community.obsidian.md/plugins). Until it is, install it as a beta release.
+The plugin is available in [the official Community Plugins repository](https://community.obsidian.md/plugins/app-update-notifier).
 
 ### Beta versions
 
