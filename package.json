@@ -1,7 +1,7 @@
 {
   "name": "app-update-notifier",
   "version": "1.0.0",
-  "description": "Notifies you about new Obsidian app, beta and installer releases, even when auto-update is disabled. It never installs anything.",
+  "description": "Notifies you about new app, beta and installer releases — not plugin updates — even when auto-update is disabled. It never installs anything.",
   "keywords": [],
   "homepage": "https://github.com/mnaoumov/obsidian-app-update-notifier#readme",
   "bugs": "https://github.com/mnaoumov/obsidian-app-update-notifier/issues",
