@@ -1,0 +1,40 @@
+{
+  "version": "0.2",
+  "ignorePaths": [
+    "coverage",
+    "dist",
+    "node_modules",
+    "tsconfig.tsbuildinfo"
+  ],
+  "dictionaryDefinitions": [],
+  "dictionaries": [],
+  "words": [
+    "appimage",
+    "asar",
+    "commitlint",
+    "contenteditable",
+    "frontmatter",
+    "GHSA",
+    "inspectable",
+    "Invocables",
+    "ipc",
+    "Keymap",
+    "lezer",
+    "mnaoumov",
+    "Naumov",
+    "OAUN",
+    "obsidianmd",
+    "offref",
+    "tsbuildinfo",
+    "unparseable",
+    "unvalidated",
+    "wdio",
+    "wikilink",
+    "Wikilink",
+    "wikilinks",
+    "Wikilinks"
+  ],
+  "ignoreWords": [],
+  "import": [],
+  "enabled": true
+}
