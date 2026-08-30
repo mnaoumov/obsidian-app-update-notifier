@@ -16,12 +16,14 @@ import {
 
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 
+import { fetchObsidianMetadata } from './obsidian-metadata-api.ts';
 import {
   fetchChangelogEntries,
   fetchDesktopReleases,
   fetchGitHubReleases
 } from './obsidian-releases-api.ts';
 import {
+  checkIsInsiderBuild,
   getAppVersion,
   getElectronVersion,
   getInstallerVersion
@@ -43,6 +45,11 @@ vi.mock('obsidian', async (importOriginal) => ({
   }
 }));
 
+vi.mock('./obsidian-metadata-api.ts', async (importOriginal) => ({
+  ...await importOriginal<typeof import('./obsidian-metadata-api.ts')>(),
+  fetchObsidianMetadata: vi.fn()
+}));
+
 vi.mock('./obsidian-releases-api.ts', async (importOriginal) => ({
   ...await importOriginal<typeof import('./obsidian-releases-api.ts')>(),
   fetchChangelogEntries: vi.fn(),
@@ -51,7 +58,9 @@ vi.mock('./obsidian-releases-api.ts', async (importOriginal) => ({
 }));
 
 vi.mock('./platform-ex.ts', () => ({
+  checkIsInsiderBuild: vi.fn(),
   getAppVersion: vi.fn(),
+  getDownloadUrl: vi.fn(() => 'https://obsidian.md/download?os=win&arch=x64'),
   getElectronVersion: vi.fn(),
   getInstallerVersion: vi.fn()
 }));
@@ -86,6 +95,11 @@ beforeEach(() => {
   vi.mocked(getAppVersion).mockReturnValue('1.13.6');
   vi.mocked(getInstallerVersion).mockReturnValue('1.13.4');
   vi.mocked(getElectronVersion).mockReturnValue('34.5.8');
+  vi.mocked(checkIsInsiderBuild).mockReturnValue(false);
+
+  // The real feed records nothing for any current version (`T717-P2`), so an empty index is the
+  // Production default rather than a degenerate fixture. Individual tests populate it.
+  vi.mocked(fetchObsidianMetadata).mockResolvedValue({});
 
   vi.mocked(fetchChangelogEntries).mockResolvedValue([
     { title: 'Obsidian 1.13.7 Desktop (Public)', url: DESKTOP_CHANGELOG_URL }
@@ -156,6 +170,23 @@ describe('check', () => {
     await createComponent().check(true);
 
     expect(showNotice).toHaveBeenCalledOnce();
+  });
+
+  it('should succeed anyway when only the enrichment feed fails', async () => {
+    /*
+     * The asymmetry that defines the fourth feed. Obsidian's own three are the answer, so their failure
+     * fails the check (asserted above). The metadata mirror only ever supplies a PREFERRED answer over
+     * one the others already give, so its being down must degrade the notice and never the check —
+     * otherwise a third-party repo going offline would silently stop this plugin reporting updates.
+     */
+    vi.mocked(fetchObsidianMetadata).mockRejectedValue(new Error('offline'));
+
+    const component = createComponent();
+    await component.check();
+
+    expect(component.lastResult?.statuses.map((status) => status.id)).toEqual([ReleaseStreamId.App, ReleaseStreamId.Installer]);
+    expect(component.lastResult?.statuses[0]?.changelogUrl).toBe(DESKTOP_CHANGELOG_URL);
+    expect(showNotice).not.toHaveBeenCalledWith('Could not check for Obsidian updates. See the console for details.');
   });
 });
 

@@ -27,8 +27,14 @@ export enum BetaStreamMode {
 export const DEFAULT_CHECK_INTERVAL_IN_MINUTES = 60;
 
 /**
- * The shortest interval accepted. GitHub allows 60 unauthenticated requests an hour per IP and a check
- * costs three, so this floor keeps a vault with several plugins sharing the IP well clear of the limit.
+ * The shortest interval accepted. GitHub allows 60 unauthenticated requests an hour per IP.
+ *
+ * ⚠️ A check makes four requests but only ONE of them counts against that budget — `api.github.com`.
+ * The other three go to `obsidian.md` and `raw.githubusercontent.com`, which are different hosts with
+ * their own, far looser limits. (This corrects an earlier note here claiming a check cost three of the
+ * sixty; it never did.) The floor stays at 15 regardless: four times an hour is already far more often
+ * than a release happens, and the headroom is what keeps a vault sharing an IP with several plugins
+ * clear of the limit.
  */
 export const MIN_CHECK_INTERVAL_IN_MINUTES = 15;
 

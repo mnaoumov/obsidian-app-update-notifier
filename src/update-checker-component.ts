@@ -7,19 +7,23 @@ import { getDebugger } from 'obsidian-dev-utils/debug';
 import { ComponentEx } from 'obsidian-dev-utils/obsidian/components/component-ex';
 import { CallbackLayoutReadyComponent } from 'obsidian-dev-utils/obsidian/components/layout-ready-component';
 
+import type { ObsidianMetadata } from './obsidian-metadata-api.ts';
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 import type {
+  ElectronStatus,
   PlatformSnapshot,
   ReleaseFeeds,
   ReleaseStreamStatus
 } from './release-streams.ts';
 
+import { fetchObsidianMetadata } from './obsidian-metadata-api.ts';
 import {
   fetchChangelogEntries,
   fetchDesktopReleases,
   fetchGitHubReleases
 } from './obsidian-releases-api.ts';
 import {
+  checkIsInsiderBuild,
   getAppVersion,
   getElectronVersion,
   getInstallerVersion
@@ -28,8 +32,10 @@ import {
   ReleaseStreamId,
   resolveAppStreamStatus,
   resolveBetaStreamStatus,
+  resolveElectronStatus,
   resolveInstallerStreamStatus
 } from './release-streams.ts';
+import { appendUpdateActions } from './update-actions.ts';
 
 /**
  * What the most recent SUCCESSFUL check found.
@@ -39,6 +45,13 @@ export interface UpdateCheckResult {
    * When the check completed, as a millisecond timestamp.
    */
   readonly checkedAtInMilliseconds: number;
+
+  /**
+   * What the check established about Electron. Reported whether or not the installer stream is being
+   * watched — someone who switched that setting off still deserves to be told their Electron is below
+   * the floor.
+   */
+  readonly electron: ElectronStatus;
 
   /**
    * The platform state the check was resolved against.
@@ -117,14 +130,16 @@ export class UpdateCheckerComponent extends ComponentEx {
       const feeds = await fetchFeeds();
       const platform = readPlatformSnapshot();
       const statuses = this.resolveStatuses(feeds, platform);
+      const electron = resolveElectronStatus(feeds, platform);
 
       this._lastResult = {
         checkedAtInMilliseconds: Date.now(),
+        electron,
         platform,
         statuses
       };
 
-      await this.notifyNewVersions(statuses);
+      await this.notifyNewVersions(statuses, electron, platform);
       this.fireResultChanged();
     } catch (error) {
       this._debugger('Update check failed', error);
@@ -157,7 +172,7 @@ export class UpdateCheckerComponent extends ComponentEx {
     }
   }
 
-  private async notifyNewVersions(statuses: readonly ReleaseStreamStatus[]): Promise<void> {
+  private async notifyNewVersions(statuses: readonly ReleaseStreamStatus[], electron: ElectronStatus, platform: PlatformSnapshot): Promise<void> {
     for (const status of statuses) {
       if (!status.isUpdateAvailable || status.latestVersion === null) {
         continue;
@@ -167,7 +182,7 @@ export class UpdateCheckerComponent extends ComponentEx {
         continue;
       }
 
-      this.pluginNoticeComponent.showNotice(createUpdateNoticeFragment(status, status.latestVersion));
+      this.pluginNoticeComponent.showNotice(createUpdateNoticeFragment(status, status.latestVersion, electron, platform.isInsiderBuild));
       await this.pluginSettingsComponent.recordNotified(status.id, status.latestVersion);
     }
   }
@@ -207,13 +222,39 @@ export class UpdateCheckerComponent extends ComponentEx {
   }
 }
 
-function createUpdateNoticeFragment(status: ReleaseStreamStatus, version: string): DocumentFragment {
+/**
+ * Builds a notice that can be acted on without leaving Obsidian: what happened, where to read about it,
+ * and the routes to take it.
+ *
+ * The links inside need no dismissal guard. G54 records that a `Notice`'s dismiss is a bubble-phase
+ * handler a child click reaches, so an interactive child needs `stopPropagation()` — but that is for
+ * BUTTONS, which must leave the notice standing. These are links: following one navigates away, and the
+ * notice closing behind it is the correct outcome. The "update app only" route is deliberately a path
+ * the reader follows, not a button (see `update-actions.ts`), so nothing here has to stay open.
+ *
+ * @param status - The stream status being announced.
+ * @param version - The version being announced.
+ * @param electron - What the check established about Electron.
+ * @param isInsiderBuild - Whether Obsidian's insider toggle is on, or `null` on mobile.
+ * @returns The notice fragment.
+ */
+function createUpdateNoticeFragment(
+  status: ReleaseStreamStatus,
+  version: string,
+  electron: ElectronStatus,
+  isInsiderBuild: boolean | null
+): DocumentFragment {
   return createFragment((f) => {
     f.appendText(createUpdateNoticeText(status, version));
     f.createEl('br');
     f.createEl('a', {
       href: status.changelogUrl,
       text: 'Read the changelog'
+    });
+    appendUpdateActions(f, {
+      electron,
+      isInsiderBuild,
+      streamId: status.id
     });
   });
 }
@@ -243,17 +284,39 @@ function createUpdateNoticeText(status: ReleaseStreamStatus, version: string): s
 }
 
 async function fetchFeeds(): Promise<ReleaseFeeds> {
-  const [changelogEntries, desktopReleases, gitHubReleases] = await Promise.all([
+  const [changelogEntries, desktopReleases, gitHubReleases, metadata] = await Promise.all([
     fetchChangelogEntries(),
     fetchDesktopReleases(),
-    fetchGitHubReleases()
+    fetchGitHubReleases(),
+    fetchOptionalMetadata()
   ]);
 
   return {
     changelogEntries,
     desktopReleases,
-    gitHubReleases
+    gitHubReleases,
+    metadata
   };
+}
+
+/**
+ * Fetches the enrichment feed, treating any failure as "it had nothing to add".
+ *
+ * ⚠️ Asymmetric on purpose, and the asymmetry is the whole design. The other three feeds are Obsidian's
+ * own: a check that cannot read them genuinely does not know the answer, so their rejection propagates
+ * and the check reports failure. This one is a third-party mirror that only ever supplies a preferred
+ * answer over one the public feeds already give, so its being down must degrade the notice, never the
+ * check. Wrapping it here rather than at the call site keeps `Promise.all` above — a `catch` that
+ * belongs to one feed should not turn the other three into `allSettled` and lose their failure.
+ *
+ * @returns A {@link Promise} resolving to the metadata, or to `null` when it could not be read.
+ */
+async function fetchOptionalMetadata(): Promise<null | ObsidianMetadata> {
+  try {
+    return await fetchObsidianMetadata();
+  } catch {
+    return null;
+  }
 }
 
 function readPlatformSnapshot(): PlatformSnapshot {
@@ -262,6 +325,7 @@ function readPlatformSnapshot(): PlatformSnapshot {
     electronVersion: getElectronVersion(),
     installerVersion: getInstallerVersion(),
     isAndroidApp: Platform.isAndroidApp,
-    isDesktopApp: Platform.isDesktopApp
+    isDesktopApp: Platform.isDesktopApp,
+    isInsiderBuild: checkIsInsiderBuild()
   };
 }

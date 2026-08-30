@@ -6,7 +6,26 @@
   }
 }
 
+.app-update-notifier-actions {
+  margin-top: var(--size-2-2);
+}
+
 .app-update-notifier-details-modal {
+  .app-update-notifier-electron-span {
+    summary {
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: var(--font-ui-smaller);
+    }
+  }
+
+  .app-update-notifier-electron-span-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--size-2-2);
+    margin-top: var(--size-2-2);
+  }
+
   .app-update-notifier-stream {
     h3 {
       margin-bottom: var(--size-2-1);

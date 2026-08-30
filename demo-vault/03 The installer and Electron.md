@@ -17,7 +17,7 @@ console.log(require('/demoSetup.ts').showThisMachine());
 
 Obsidian gates features on a minimum Electron version. When yours is below it, some features are simply absent — not broken with an error, absent — and nothing in the interface connects that absence to your installer. Obsidian knows: its own debug information carries the line *"Update installer: installer version too low, please download and reinstall"*. But you only ever see that if you go and generate a debug report, which nobody does until something has already gone wrong.
 
-The floor is Electron **28.2.3**. The plugin compares against exactly that number, and when you are below it the details panel says so and links the download page.
+The floor is Electron **28.2.3**. The plugin compares against that number, and when you are below it the details panel says so and links the download page. Where a published index records a different floor for the exact Obsidian you are running, that one is used instead — the hard-coded number is the fallback, not the only answer.
 
 One piece of pedantry worth knowing, because the plugin deliberately does not repeat it: Obsidian labels that check "installer version too low", but what it actually compares is the **Electron** version. They usually move together, and they are not the same thing. The panel names Electron, because that is what is being measured.
 
@@ -32,7 +32,13 @@ caption: Check for updates now
 require('/demoSetup.ts').checkForUpdatesNow(app);
 ```
 
-If the panel offers a **Download** link on the Installer row, that link is built the same way Obsidian's own recommendation builds it, with the operating system and architecture of the machine you are on.
+If the Installer row says an update is available, it now offers **Update with new installer (recommended)** — a link built the same way Obsidian's own recommendation builds it, carrying the operating system and architecture of the machine you are on, so you land on the right installer rather than picking one.
+
+## The Electron you would move to
+
+Beside that link, when it can be established, the panel names both ends of the jump: *Your Electron version 34.5.8, latest installer has Electron version 39.8.3*, and offers the releases in between as links to Electron's own release notes. That span is collapsed to one release per major when it is long — someone several years behind crosses well over two hundred Electron releases, and a wall of two hundred links helps nobody — and the panel says how many it left out rather than quietly showing you a dozen and letting you assume that was all of them.
+
+Right now you will most likely see only your own version and nothing about the newest installer's. That is deliberate, not a bug. Obsidian does not publish which Electron an installer bundles anywhere a program can read, and the one public index that used to record it has stopped being filled in for current releases. Rather than guess, or print "unknown", the plugin stays quiet about the half it cannot establish — and starts showing it the day that data comes back, with no update to this plugin needed.
 
 ## Turning it off
 

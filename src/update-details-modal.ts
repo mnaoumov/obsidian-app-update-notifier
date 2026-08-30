@@ -3,21 +3,27 @@ import type {
   ModalParamsBase
 } from 'obsidian-dev-utils/obsidian/modals/modal';
 
+import { convertAsyncToSync } from 'obsidian-dev-utils/async';
 import {
   ModalBase,
   showModal
 } from 'obsidian-dev-utils/obsidian/modals/modal';
 
-import type { ReleaseStreamStatus } from './release-streams.ts';
+import type { ElectronSpan } from './electron-span.ts';
+import type {
+  ElectronStatus,
+  ReleaseStreamStatus
+} from './release-streams.ts';
 import type { UpdateCheckResult } from './update-checker-component.ts';
 
-import { getDownloadUrl } from './platform-ex.ts';
 import {
-  checkIsElectronOutdated,
-  MIN_RECOMMENDED_ELECTRON_VERSION,
-  RELEASE_STREAM_LABELS,
-  ReleaseStreamId
-} from './release-streams.ts';
+  fetchElectronStableVersions,
+  getElectronReleaseUrl
+} from './electron-releases-api.ts';
+import { resolveElectronSpan } from './electron-span.ts';
+import { getDownloadUrl } from './platform-ex.ts';
+import { RELEASE_STREAM_LABELS } from './release-streams.ts';
+import { appendUpdateActions } from './update-actions.ts';
 
 /**
  * Parameters for {@link showUpdateDetails}.
@@ -39,6 +45,14 @@ type UpdateDetailsModalConstructorParams = ModalBaseConstructorParams<void> & Sh
 const EMPTY = '';
 
 class UpdateDetailsModal extends ModalBase<void> {
+  /**
+   * Whether the modal has been closed.
+   *
+   * The Electron span is fetched AFTER the panel has rendered, so its `await` can land on a modal the
+   * user has already dismissed. Writing into a detached `contentEl` is silent rather than fatal, which
+   * is exactly what makes it worth guarding explicitly.
+   */
+  private isClosed = false;
   private readonly result: null | UpdateCheckResult;
 
   public constructor(params: UpdateDetailsModalConstructorParams) {
@@ -48,6 +62,7 @@ class UpdateDetailsModal extends ModalBase<void> {
   }
 
   public override onClose(): void {
+    this.isClosed = true;
     this.promiseResolve();
   }
 
@@ -66,10 +81,10 @@ class UpdateDetailsModal extends ModalBase<void> {
     }
 
     for (const status of result.statuses) {
-      this.renderStatus(status);
+      this.renderStatus(status, result);
     }
 
-    this.renderElectron(result);
+    this.renderElectron(result.electron);
 
     this.contentEl.createEl('p', {
       cls: 'app-update-notifier-checked-at',
@@ -77,24 +92,67 @@ class UpdateDetailsModal extends ModalBase<void> {
     });
   }
 
-  private renderElectron(result: UpdateCheckResult): void {
-    const electronVersion = result.platform.electronVersion;
-    if (electronVersion === null) {
+  /**
+   * Fetches Electron's release index and fills in the list of releases between the two versions.
+   *
+   * ⚠️ Called from {@link UpdateDetailsModal.renderElectron} and NOWHERE else. The index is 1.28 MB;
+   * putting it on the hourly check path would spend a megabyte an hour rendering a list nobody has
+   * asked to see. Opening this panel is the moment someone asks.
+   *
+   * @param containerEl - Where to render the list.
+   * @param electron - The Electron status, with both endpoints already known.
+   * @returns A {@link Promise} that resolves once the list has been rendered or given up.
+   */
+  private async loadElectronSpan(containerEl: HTMLElement, electron: ElectronStatus): Promise<void> {
+    containerEl.setText(`${EMPTY}Loading the Electron releases in between…`);
+
+    let span: ElectronSpan;
+
+    try {
+      span = resolveElectronSpan(electron.currentVersion, electron.targetVersion, await fetchElectronStableVersions());
+    } catch {
+      if (!this.isClosed) {
+        containerEl.setText(`${EMPTY}Could not load the list of Electron releases in between.`);
+      }
+
+      return;
+    }
+
+    if (this.isClosed) {
+      return;
+    }
+
+    renderElectronSpan(containerEl, span);
+  }
+
+  private renderElectron(electron: ElectronStatus): void {
+    if (electron.currentVersion === null) {
       return;
     }
 
     const paragraph = this.contentEl.createEl('p', { cls: 'app-update-notifier-electron' });
     paragraph.createEl('strong', { text: 'Electron: ' });
-    paragraph.appendText(electronVersion);
+    paragraph.appendText(electron.currentVersion);
 
-    if (!checkIsElectronOutdated(electronVersion)) {
+    // Only when the newest installer would actually MOVE it. `targetVersion` is `null` for every
+    // Current Obsidian today, because the metadata feed's `runtimeVersions` stopped being populated
+    // (`T717-P2`), so this whole branch is dark until that is backfilled.
+    if (electron.targetVersion !== null && electron.targetVersion !== electron.currentVersion) {
+      paragraph.appendText(`, latest installer has Electron version ${electron.targetVersion}`);
+      const spanEl = this.contentEl.createDiv({ cls: 'app-update-notifier-electron-span' });
+      convertAsyncToSync(async () => {
+        await this.loadElectronSpan(spanEl, electron);
+      })();
+    }
+
+    if (!electron.isOutdated) {
       return;
     }
 
     // Obsidian calls this "installer version too low", but what it compares is Electron
     // (`app.js:160712`), so the sentence names what is actually being checked.
     paragraph.createEl('br');
-    paragraph.appendText(`Below ${MIN_RECOMMENDED_ELECTRON_VERSION}, which some Obsidian features require. Reinstalling from `);
+    paragraph.appendText(`Below ${electron.minRecommendedVersion}, which some Obsidian features require. Reinstalling from `);
     paragraph.createEl('a', {
       href: getDownloadUrl(),
       text: `${EMPTY}the download page`
@@ -102,7 +160,7 @@ class UpdateDetailsModal extends ModalBase<void> {
     paragraph.appendText(' updates it.');
   }
 
-  private renderStatus(status: ReleaseStreamStatus): void {
+  private renderStatus(status: ReleaseStreamStatus, result: UpdateCheckResult): void {
     const container = this.contentEl.createDiv({ cls: 'app-update-notifier-stream' });
     container.createEl('h3', { text: RELEASE_STREAM_LABELS[status.id] });
 
@@ -119,13 +177,17 @@ class UpdateDetailsModal extends ModalBase<void> {
       text: 'Changelog'
     });
 
-    if (status.isUpdateAvailable && status.id === ReleaseStreamId.Installer) {
-      changelogLine.appendText(' · ');
-      changelogLine.createEl('a', {
-        href: getDownloadUrl(),
-        text: 'Download'
-      });
+    if (!status.isUpdateAvailable) {
+      return;
     }
+
+    // The install routes carry the download link for every stream, so the Installer stream's own
+    // `Download` link would now be the same link twice in one section.
+    appendUpdateActions(container, {
+      electron: result.electron,
+      isInsiderBuild: result.platform.isInsiderBuild,
+      streamId: status.id
+    });
   }
 }
 
@@ -145,6 +207,11 @@ export async function showUpdateDetails(params: ShowUpdateDetailsParams): Promis
   );
 }
 
+function describeElectronSpan(span: ElectronSpan): string {
+  const listedText = `${span.listedVersions.length.toString()} Electron releases in between`;
+  return span.omittedCount === 0 ? listedText : `${listedText} (one per major; ${span.omittedCount.toString()} more not listed)`;
+}
+
 function describeStatus(status: ReleaseStreamStatus): string {
   if (status.isUpdateAvailable) {
     return 'An update is available.';
@@ -155,4 +222,33 @@ function describeStatus(status: ReleaseStreamStatus): string {
   }
 
   return 'Up to date.';
+}
+
+/**
+ * Renders the resolved span as a collapsed list of links.
+ *
+ * The `omittedCount` is rendered rather than swallowed. The span reaches 245 releases for someone on an
+ * old installer — the very user this plugin exists for — and collapsing that to a dozen links without
+ * saying so reads as "that is all of them".
+ *
+ * @param containerEl - Where to render.
+ * @param span - The resolved span.
+ */
+function renderElectronSpan(containerEl: HTMLElement, span: ElectronSpan): void {
+  containerEl.empty();
+
+  if (span.listedVersions.length === 0) {
+    return;
+  }
+
+  const detailsEl = containerEl.createEl('details');
+  detailsEl.createEl('summary', { text: describeElectronSpan(span) });
+  const listEl = detailsEl.createDiv({ cls: 'app-update-notifier-electron-span-list' });
+
+  for (const version of span.listedVersions) {
+    listEl.createEl('a', {
+      href: getElectronReleaseUrl(version),
+      text: `v${version}`
+    });
+  }
 }

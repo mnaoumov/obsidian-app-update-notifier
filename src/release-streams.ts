@@ -1,10 +1,10 @@
 /**
  * @file
  *
- * The three release streams the plugin watches, resolved as pure functions over an already-fetched
- * {@link ReleaseFeeds} and an already-read {@link PlatformSnapshot}. Nothing here fetches or touches
- * `Platform`, so every rule below — which feed answers which stream, and the traps in each — is
- * testable without a network or an app.
+ * The three release streams the plugin watches — plus the Electron state, which is not a stream —
+ * resolved as pure functions over an already-fetched {@link ReleaseFeeds} and an already-read
+ * {@link PlatformSnapshot}. Nothing here fetches or touches `Platform`, so every rule below — which
+ * feed answers which stream, and the traps in each — is testable without a network or an app.
  */
 
 import {
@@ -12,12 +12,18 @@ import {
   valid
 } from 'semver';
 
+import type { ObsidianMetadata } from './obsidian-metadata-api.ts';
 import type {
   ChangelogEntry,
   DesktopReleases,
   GitHubRelease
 } from './obsidian-releases-api.ts';
 
+import {
+  getMetadataChangelogUrl,
+  getMetadataElectronVersion,
+  getMetadataMinRecommendedElectronVersion
+} from './obsidian-metadata-api.ts';
 import {
   CHANGELOG_INDEX_URL,
   ChangelogPlatform,
@@ -35,6 +41,37 @@ export enum ReleaseStreamId {
   App = 'app',
   Beta = 'beta',
   Installer = 'installer'
+}
+
+/**
+ * What one check could establish about Electron — what is bundled now, what the newest installer would
+ * bundle, and whether the current one is below the floor Obsidian's own diagnostics use.
+ */
+export interface ElectronStatus {
+  /**
+   * The Electron the installed installer bundled, or `null` on mobile.
+   */
+  readonly currentVersion: null | string;
+
+  /**
+   * Whether {@link ElectronStatus.currentVersion} is below {@link ElectronStatus.minRecommendedVersion}.
+   */
+  readonly isOutdated: boolean;
+
+  /**
+   * The floor to compare against — from the metadata feed when it records one for the running version,
+   * otherwise {@link MIN_RECOMMENDED_ELECTRON_VERSION}.
+   */
+  readonly minRecommendedVersion: string;
+
+  /**
+   * The Electron the NEWEST installer bundles, or `null` when it is not known.
+   *
+   * ⚠️ `null` for every current Obsidian today: the only source is the metadata feed's
+   * `runtimeVersions`, which is absent from every `1.13.x` entry (`T717-P2`). The whole Electron-span
+   * half of the UI is therefore dark until that is backfilled, at which point it lights up on its own.
+   */
+  readonly targetVersion: null | string;
 }
 
 /**
@@ -65,6 +102,17 @@ export interface PlatformSnapshot {
    * Whether this is the Electron desktop app.
    */
   readonly isDesktopApp: boolean;
+
+  /**
+   * Whether Obsidian's own insider (Catalyst) build channel is switched on, or `null` on mobile.
+   *
+   * ⚠️ Read this ONE-DIRECTIONALLY. Obsidian hides the insider toggle and forces it `false` when there
+   * is no license (`app.js:202195-202197`), so `true` IMPLIES a Catalyst license — but `false` is
+   * ambiguous: no license, or licensed with the toggle off. There is no supported read of the license
+   * itself (it lives on the module-private singleton `Nk` at `app.js:66191`, which escapes to neither
+   * `window` nor `app`), so nothing may present `false` as "this user has no Catalyst".
+   */
+  readonly isInsiderBuild: boolean | null;
 }
 
 /**
@@ -86,6 +134,16 @@ export interface ReleaseFeeds {
    * The newest GitHub releases, newest first.
    */
   readonly gitHubReleases: readonly GitHubRelease[];
+
+  /**
+   * The ENRICHMENT feed, or `null` when it could not be read.
+   *
+   * ⚠️ `null` is a normal shape, not an error state, and so is a present feed that has no entry for the
+   * version being asked about. Every resolver below must reach the same answer without it as the one it
+   * reached before this feed existed — it is only ever consulted FIRST, never instead. See
+   * `obsidian-metadata-api.ts` for why: it is a third-party mirror that lags the public feeds.
+   */
+  readonly metadata: null | ObsidianMetadata;
 }
 
 /**
@@ -149,10 +207,13 @@ export const RELEASE_STREAM_LABELS: Readonly<Record<ReleaseStreamId, string>> = 
  * check would be repeating Obsidian's own mislabelling.
  *
  * @param electronVersion - The bundled Electron version, or `null` on mobile.
- * @returns `true` when Electron is below {@link MIN_RECOMMENDED_ELECTRON_VERSION}.
+ * @param minRecommendedVersion - The floor to compare against. Defaults to
+ * {@link MIN_RECOMMENDED_ELECTRON_VERSION}; the metadata feed supplies a per-version one when it
+ * records it.
+ * @returns `true` when Electron is below the floor.
  */
-export function checkIsElectronOutdated(electronVersion: null | string): boolean {
-  return checkIsOlder(electronVersion, MIN_RECOMMENDED_ELECTRON_VERSION);
+export function checkIsElectronOutdated(electronVersion: null | string, minRecommendedVersion: string = MIN_RECOMMENDED_ELECTRON_VERSION): boolean {
+  return checkIsOlder(electronVersion, minRecommendedVersion);
 }
 
 /**
@@ -202,6 +263,30 @@ export function resolveBetaStreamStatus(feeds: ReleaseFeeds, platform: PlatformS
 }
 
 /**
+ * Resolves everything one check could establish about Electron.
+ *
+ * Kept out of the three stream resolvers on purpose: Electron is not a stream. It moves only when the
+ * INSTALLER is replaced, it has no feed of its own that a check reads, and it is reported whether or
+ * not the installer stream is being watched — someone who switched that setting off still deserves to
+ * be told their Electron is below the floor.
+ *
+ * @param feeds - The fetched feeds.
+ * @param platform - The platform snapshot.
+ * @returns The Electron status.
+ */
+export function resolveElectronStatus(feeds: ReleaseFeeds, platform: PlatformSnapshot): ElectronStatus {
+  const latestInstallerVersion = platform.isDesktopApp ? findLatestDesktopInstallerVersion(feeds.gitHubReleases) : null;
+  const minRecommendedVersion = getMetadataMinRecommendedElectronVersion(feeds.metadata, platform.appVersion) ?? MIN_RECOMMENDED_ELECTRON_VERSION;
+
+  return {
+    currentVersion: platform.electronVersion,
+    isOutdated: checkIsElectronOutdated(platform.electronVersion, minRecommendedVersion),
+    minRecommendedVersion,
+    targetVersion: getMetadataElectronVersion(feeds.metadata, latestInstallerVersion)
+  };
+}
+
+/**
  * Resolves the installer stream — the executable on disk, which auto-update never touches.
  *
  * @param feeds - The fetched feeds.
@@ -217,7 +302,8 @@ export function resolveInstallerStreamStatus(feeds: ReleaseFeeds, platform: Plat
     // Not on the app stream.
     changelogUrl: latestVersion === null
       ? CHANGELOG_INDEX_URL
-      : getReleaseChangelogUrl(feeds.gitHubReleases, latestVersion)
+      : getMetadataChangelogUrl(feeds.metadata, latestVersion, ChangelogPlatform.Desktop, false)
+        ?? getReleaseChangelogUrl(feeds.gitHubReleases, latestVersion)
         ?? findChangelogUrl(feeds.changelogEntries, latestVersion, ChangelogPlatform.Desktop, false),
     currentVersion: platform.installerVersion,
     id: ReleaseStreamId.Installer,
@@ -244,5 +330,6 @@ function resolveChangelogUrl(
     return CHANGELOG_INDEX_URL;
   }
 
-  return findChangelogUrl(feeds.changelogEntries, version, platform, shouldPreferEarlyAccess);
+  return getMetadataChangelogUrl(feeds.metadata, version, platform, shouldPreferEarlyAccess)
+    ?? findChangelogUrl(feeds.changelogEntries, version, platform, shouldPreferEarlyAccess);
 }

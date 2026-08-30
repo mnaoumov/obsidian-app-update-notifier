@@ -52,9 +52,11 @@ Obsidian's version is three separate answers that move independently, and this p
 - **One notice per new version, ever.** A version already announced is never mentioned again — not on the next check, not after a restart.
 - **A changelog link on everything.** A version with no public GitHub release, which is the normal case for a Catalyst build, still resolves its changelog from Obsidian's changelog feed.
 - **An Electron warning** when the bundled version is below `28.2.3`, the floor Obsidian itself checks, with the download link built the same way Obsidian's own recommendation builds it.
+- **Both ways to take an update, on the notice and in the panel.** *Update with new installer (recommended)* links the download page for your operating system and architecture; beside it, `Settings → General → Check for updates` names the route that replaces the app bundle alone and leaves the installer where it is. It is a path rather than a button on purpose — Obsidian's own button is wired to an internal updater a plugin could only press by matching translated text in the DOM.
+- **A license-aware Catalyst row.** An insider build you cannot install is not a dead end: the panel says what is needed and links Obsidian's early-access page. It never claims you have no Catalyst — Obsidian exposes no way to read that, only whether the insider setting is on.
 - **A `Check for updates now` command**, for when you would rather not wait for the next scheduled check.
 
-Checks run once at startup and then hourly, matching Obsidian's own updater; the interval is configurable, and `0` leaves only the command. A check costs three requests, so an hourly check uses three of GitHub's sixty per hour. A failed check is silent and keeps the last answer it had, rather than reporting "up to date" when it means "could not tell".
+Checks run once at startup and then hourly, matching Obsidian's own updater; the interval is configurable, and `0` leaves only the command. A check makes four requests, one of which reaches GitHub's API — so an hourly check uses one of its sixty per hour. A failed check is silent and keeps the last answer it had, rather than reporting "up to date" when it means "could not tell".
 
 ## Installation
 

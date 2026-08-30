@@ -4,6 +4,7 @@ import {
   it
 } from 'vitest';
 
+import type { ObsidianMetadata } from './obsidian-metadata-api.ts';
 import type {
   PlatformSnapshot,
   ReleaseFeeds
@@ -16,6 +17,7 @@ import {
   ReleaseStreamId,
   resolveAppStreamStatus,
   resolveBetaStreamStatus,
+  resolveElectronStatus,
   resolveInstallerStreamStatus
 } from './release-streams.ts';
 
@@ -53,8 +55,9 @@ const FEEDS: ReleaseFeeds = {
       body: DESKTOP_CHANGELOG_URL,
       tag_name: 'v1.13.7'
     }
-  ]
+  ],
   /* eslint-enable camelcase -- GitHub publishes the tag as `tag_name`; a fixture that renamed it would stop matching the payload it stands in for. */
+  metadata: null
 };
 
 const DESKTOP: PlatformSnapshot = {
@@ -62,7 +65,8 @@ const DESKTOP: PlatformSnapshot = {
   electronVersion: '34.5.8',
   installerVersion: '1.13.4',
   isAndroidApp: false,
-  isDesktopApp: true
+  isDesktopApp: true,
+  isInsiderBuild: false
 };
 
 const ANDROID: PlatformSnapshot = {
@@ -70,7 +74,8 @@ const ANDROID: PlatformSnapshot = {
   electronVersion: null,
   installerVersion: null,
   isAndroidApp: true,
-  isDesktopApp: false
+  isDesktopApp: false,
+  isInsiderBuild: null
 };
 
 describe('resolveAppStreamStatus', () => {
@@ -176,5 +181,102 @@ describe('checkIsElectronOutdated', () => {
     [null, false]
   ])('should report %s as outdated: %s', (electronVersion: null | string, isOutdatedExpected: boolean) => {
     expect(checkIsElectronOutdated(electronVersion)).toBe(isOutdatedExpected);
+  });
+
+  it('should compare against a supplied floor rather than the hard-coded one', () => {
+    expect(checkIsElectronOutdated('34.5.8', '40.0.0')).toBe(true);
+  });
+});
+
+/*
+ * The enrichment feed is consulted FIRST and never INSTEAD. Each test below therefore has to show two
+ * things: that a metadata answer wins, and that its absence leaves the pre-existing chain producing
+ * exactly what it produced before this feed existed. `metadata: null` in the shared FEEDS fixture is the
+ * second half of that, asserted by every other test in this file.
+ */
+describe('the metadata feed as a changelog source', () => {
+  const METADATA_DESKTOP_URL = 'https://obsidian.md/changelog/from-metadata-desktop/';
+  const METADATA_MOBILE_URL = 'https://obsidian.md/changelog/from-metadata-mobile/';
+
+  const METADATA: ObsidianMetadata = {
+    '1.13.7': {
+      changelogUrl: {
+        desktop: METADATA_DESKTOP_URL,
+        desktopCatalyst: 'https://obsidian.md/changelog/from-metadata-desktop-catalyst/'
+      }
+    },
+    '1.13.8': { changelogUrl: { mobile: METADATA_MOBILE_URL } }
+  };
+
+  const ENRICHED_FEEDS: ReleaseFeeds = {
+    ...FEEDS,
+    metadata: METADATA
+  };
+
+  it('should win over matching a title in the changelog feed, on the app stream', () => {
+    expect(resolveAppStreamStatus(ENRICHED_FEEDS, DESKTOP).changelogUrl).toBe(METADATA_DESKTOP_URL);
+  });
+
+  it('should resolve the mobile target on Android rather than the desktop one', () => {
+    expect(resolveAppStreamStatus(ENRICHED_FEEDS, ANDROID).changelogUrl).toBe(METADATA_MOBILE_URL);
+  });
+
+  it('should win over the Catalyst title match on the beta stream', () => {
+    expect(resolveBetaStreamStatus(ENRICHED_FEEDS, DESKTOP).changelogUrl).toBe('https://obsidian.md/changelog/from-metadata-desktop-catalyst/');
+  });
+
+  it('should win over the release body on the installer stream', () => {
+    expect(resolveInstallerStreamStatus(ENRICHED_FEEDS, DESKTOP).changelogUrl).toBe(METADATA_DESKTOP_URL);
+  });
+
+  it('should leave the existing chain intact for a version it has no entry for', () => {
+    // The lag made real: on 2026-08-30 GitHub had v1.13.8 while the feed's newest entry was 1.13.7.
+    const staleMetadata: ReleaseFeeds = {
+      ...FEEDS,
+      metadata: { '1.13.6': { changelogUrl: { desktop: METADATA_DESKTOP_URL } } }
+    };
+
+    expect(resolveAppStreamStatus(staleMetadata, DESKTOP).changelogUrl).toBe(DESKTOP_CHANGELOG_URL);
+  });
+});
+
+describe('resolveElectronStatus', () => {
+  it('should report the running Electron and no target while the feed records none', () => {
+    // The production state today — no 1.13.x entry carries `runtimeVersions` (`T717-P2`).
+    expect(resolveElectronStatus(FEEDS, DESKTOP)).toEqual({
+      currentVersion: '34.5.8',
+      isOutdated: false,
+      minRecommendedVersion: MIN_RECOMMENDED_ELECTRON_VERSION,
+      targetVersion: null
+    });
+  });
+
+  it('should read the newest installer\'s Electron once the feed records it', () => {
+    const feeds: ReleaseFeeds = {
+      ...FEEDS,
+      metadata: { '1.13.7': { runtimeVersions: { electron: '39.8.3' } } }
+    };
+
+    expect(resolveElectronStatus(feeds, DESKTOP).targetVersion).toBe('39.8.3');
+  });
+
+  it('should prefer the floor the feed records for the running version over the hard-coded one', () => {
+    const feeds: ReleaseFeeds = {
+      ...FEEDS,
+      metadata: { '1.13.6': { minRecommendedElectronVersion: '40.0.0' } }
+    };
+
+    const status = resolveElectronStatus(feeds, DESKTOP);
+    expect(status.minRecommendedVersion).toBe('40.0.0');
+    expect(status.isOutdated).toBe(true);
+  });
+
+  it('should report nothing about Electron on mobile, where there is none', () => {
+    expect(resolveElectronStatus(FEEDS, ANDROID)).toEqual({
+      currentVersion: null,
+      isOutdated: false,
+      minRecommendedVersion: MIN_RECOMMENDED_ELECTRON_VERSION,
+      targetVersion: null
+    });
   });
 });
