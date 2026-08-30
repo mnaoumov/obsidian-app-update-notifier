@@ -82,6 +82,10 @@ window.DEBUG.enable('app-update-notifier');
 
 For more details, refer to the [documentation](https://mnaoumov.dev/obsidian-dev-utils/guides/debugging/).
 
+## Changelog
+
+All notable changes to this project will be documented in the [CHANGELOG](./CHANGELOG.md).
+
 ## Contributing
 
 Contributions are welcome — see [CONTRIBUTING](./CONTRIBUTING.md) to get set up.
