@@ -2,8 +2,6 @@
 
 ## 1.0.0
 
-Initial release.
-
 - Watches all three Obsidian release streams — the app, the insider (Catalyst) build and the installer — and reports what is behind in the status bar.
 - Announces each new version exactly once, with a changelog link, resolved from Obsidian's changelog feed even for versions with no public GitHub release.
 - Warns when the bundled Electron is below the floor Obsidian itself checks, and shows the Electron span between the installed and available installer.
