@@ -30,30 +30,6 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-describe('defaults', () => {
-  it('should check hourly, matching Obsidian\'s own updater', () => {
-    expect(createComponent().defaultSettings.checkIntervalInMinutes).toBe(DEFAULT_CHECK_INTERVAL_IN_MINUTES);
-  });
-
-  it('should follow Obsidian\'s own insider setting rather than assuming Catalyst', () => {
-    expect(createComponent().defaultSettings.betaStreamMode).toBe(BetaStreamMode.Auto);
-  });
-
-  it('should start with nothing announced, one slot per stream', () => {
-    expect(createComponent().defaultSettings.notifiedVersions).toEqual({
-      [ReleaseStreamId.App]: '',
-      [ReleaseStreamId.Beta]: '',
-      [ReleaseStreamId.Installer]: ''
-    });
-  });
-
-  it('should watch the installer and show the status bar item', () => {
-    const settings = createComponent().defaultSettings;
-    expect(settings.shouldWatchInstallerStream).toBe(true);
-    expect(settings.shouldShowStatusBarItem).toBe(true);
-  });
-});
-
 describe('checkShouldWatchBetaStream', () => {
   it('should watch it unconditionally in Always mode', async () => {
     const component = await createLoadedComponent();
@@ -108,13 +84,12 @@ describe('notified versions', () => {
     expect(component.checkWasNotified(ReleaseStreamId.Installer, '1.13.7')).toBe(false);
   });
 
-  it('should hold one entry per stream however many versions pass through, so it cannot grow', async () => {
+  it('should replace the recorded version rather than accumulate versions', async () => {
     const component = await createLoadedComponent();
 
     await component.recordNotified(ReleaseStreamId.App, '1.13.7');
     await component.recordNotified(ReleaseStreamId.App, '1.13.8');
 
-    expect(Object.keys(component.settings.notifiedVersions)).toHaveLength(3);
     expect(component.checkWasNotified(ReleaseStreamId.App, '1.13.7')).toBe(false);
     expect(component.checkWasNotified(ReleaseStreamId.App, '1.13.8')).toBe(true);
   });

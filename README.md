@@ -28,7 +28,9 @@ A demo vault with usage examples ships with every release. You can access it via
 
 Start reading here: [`demo-vault/00 Start.md`](<./demo-vault/00 Start.md>). It is plain markdown and reads on GitHub with nothing installed.
 
-## The three streams
+## What it does
+
+### The three streams
 
 Obsidian's version is three separate answers that move independently, and this plugin reports each one.
 
@@ -39,7 +41,7 @@ Obsidian's version is three separate answers that move independently, and this p
 - **Installer**
   - the executable installed on this machine, which **automatic updates never touch**. It carries the bundled Electron, and Obsidian gates features on a minimum Electron version — so an old installer silently withholds features with nothing in the interface connecting the two. Desktop only.
 
-## What it does with them
+### What it does with them
 
 - **A status bar item** showing what is behind, or **Obsidian: up to date**. Clicking it opens a panel listing every watched stream, what is installed against what is published, and a changelog link for each. Before the first successful check it says **not checked**, which is deliberately not dressed up as "up to date".
 - **One notice per new version, ever.** A version already announced is never mentioned again — not on the next check, not after a restart.
