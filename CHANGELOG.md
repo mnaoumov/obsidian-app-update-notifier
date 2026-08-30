@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.0.1
+
+- docs: update changelog
+- fix(manifest): reword the description the directory rejects for naming Obsidian
+- docs: link the changelog now that 1.0.0 exists
+
 ## 1.0.0
 
 - Watches all three Obsidian release streams — the app, the insider (Catalyst) build and the installer — and reports what is behind in the status bar.
