@@ -2,6 +2,22 @@
 
 Turning off Obsidian's automatic updates also turns off its checking, so from then on nothing tells you a release happened — and the installer version, which carries the Electron that gates several Obsidian features, is never checked at all. This plugin watches all three release streams — the app, the insider (Catalyst) build and the installer — reports what is behind in the status bar, and announces each new version exactly once with a link to its changelog. It never installs anything.
 
+<!-- markdownlint-disable MD033 -->
+
+<a href="https://github.com/mnaoumov/obsidian-app-update-notifier/blob/HEAD/images/screenshots/screenshot-desktop-1.png"><img src="images/screenshots/screenshot-desktop-1.png" alt="Every option in one place, including what Obsidian itself is set to" width="600"></a>
+
+<details><summary>More screenshots</summary>
+
+<div>
+<a href="https://github.com/mnaoumov/obsidian-app-update-notifier/blob/HEAD/images/screenshots/screenshot-desktop-2.png"><img src="images/screenshots/screenshot-desktop-2.png" alt="Every stream it watches, with a changelog link on each" width="600"></a>
+<a href="https://github.com/mnaoumov/obsidian-app-update-notifier/blob/HEAD/images/screenshots/screenshot-mobile-1.png"><img src="images/screenshots/screenshot-mobile-1.png" alt="Every option in one place, on the phone too" width="270"></a>
+<a href="https://github.com/mnaoumov/obsidian-app-update-notifier/blob/HEAD/images/screenshots/screenshot-mobile-2.png"><img src="images/screenshots/screenshot-mobile-2.png" alt="The app stream, with a changelog link — no installer on mobile" width="270"></a>
+</div>
+
+</details>
+
+<!-- markdownlint-enable MD033 -->
+
 ## Demo vault
 
 A demo vault with usage examples ships with every release. You can access it via any of the following:
