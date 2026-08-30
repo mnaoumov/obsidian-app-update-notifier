@@ -120,6 +120,11 @@ describe('resolveBetaStreamStatus', () => {
     expect(status.isUpdateAvailable).toBe(true);
   });
 
+  it('should look for the mobile changelog entry on mobile', () => {
+    const status = resolveBetaStreamStatus(FEEDS, ANDROID);
+    expect(status.changelogUrl).toBe(CHANGELOG_INDEX_URL);
+  });
+
   it('should degrade to the changelog index when the feed carries no beta channel', () => {
     const feeds: ReleaseFeeds = { ...FEEDS, desktopReleases: { latestVersion: '1.13.7', minimumVersion: '1.1.9' } };
     const status = resolveBetaStreamStatus(feeds, DESKTOP);
@@ -139,6 +144,20 @@ describe('resolveInstallerStreamStatus', () => {
       isUpdateAvailable: true,
       latestVersion: '1.13.7'
     });
+  });
+
+  it('should fall back to the changelog feed when the release body is not a changelog URL', () => {
+    const feeds: ReleaseFeeds = {
+      ...FEEDS,
+      gitHubReleases: [{
+        assets: [{ name: 'Obsidian-1.13.7.exe' }],
+        body: 'Some release notes.',
+        /* eslint-disable-next-line camelcase -- GitHub publishes the tag as `tag_name`; a fixture that renamed it would stop matching the payload it stands in for. */
+        tag_name: 'v1.13.7'
+      }]
+    };
+
+    expect(resolveInstallerStreamStatus(feeds, DESKTOP).changelogUrl).toBe(DESKTOP_CHANGELOG_URL);
   });
 
   it('should not apply on mobile', () => {

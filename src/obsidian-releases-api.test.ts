@@ -1,7 +1,13 @@
+import type { RequestUrlResponse } from 'obsidian';
+
+import { requestUrl } from 'obsidian';
+import { castTo } from 'obsidian-dev-utils/object-utils';
 import {
+  beforeEach,
   describe,
   expect,
-  it
+  it,
+  vi
 } from 'vitest';
 
 import type {
@@ -11,12 +17,29 @@ import type {
 
 import {
   CHANGELOG_INDEX_URL,
+  CHANGELOG_JSON_URL,
   ChangelogPlatform,
+  DESKTOP_RELEASES_JSON_URL,
+  fetchChangelogEntries,
+  fetchDesktopReleases,
+  fetchGitHubReleases,
   findChangelogUrl,
   findLatestAndroidVersion,
   findLatestDesktopInstallerVersion,
-  getReleaseChangelogUrl
+  getReleaseChangelogUrl,
+  GITHUB_RELEASES_URL
 } from './obsidian-releases-api.ts';
+
+vi.mock('obsidian', async (importOriginal) => ({
+  ...await importOriginal<typeof import('obsidian')>(),
+  requestUrl: vi.fn()
+}));
+
+const mockedRequestUrl = vi.mocked(requestUrl);
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
 
 /**
  * The real shape of the two newest releases on 2026-08-29: v1.13.8 shipped ONLY the Android app, while
@@ -68,6 +91,10 @@ describe('findLatestDesktopInstallerVersion', () => {
     ['obsidian-1.14.0.tar.gz']
   ])('should recognize %s as a desktop installer', (assetName: string) => {
     expect(findLatestDesktopInstallerVersion([createRelease('v1.14.0', [assetName])])).toBe('1.14.0');
+  });
+
+  it('should accept a tag published without the leading v', () => {
+    expect(findLatestDesktopInstallerVersion([createRelease('1.14.0', ['Obsidian-1.14.0.exe'])])).toBe('1.14.0');
   });
 
   it('should return null when no release shipped a desktop installer', () => {
@@ -129,6 +156,40 @@ describe('findChangelogUrl', () => {
   });
 });
 
+describe('fetchChangelogEntries', () => {
+  it('should read the feed items', async () => {
+    mockedRequestUrl.mockResolvedValue(createResponse({ items: CHANGELOG_ENTRIES }));
+    await expect(fetchChangelogEntries()).resolves.toEqual(CHANGELOG_ENTRIES);
+    expect(mockedRequestUrl).toHaveBeenCalledWith(CHANGELOG_JSON_URL);
+  });
+
+  it('should treat a feed with no items as empty rather than as an error', () => {
+    // A changelog nobody can resolve degrades to the index; it must never take a whole check down with it.
+    mockedRequestUrl.mockResolvedValue(createResponse({}));
+    return expect(fetchChangelogEntries()).resolves.toEqual([]);
+  });
+});
+
+describe('fetchDesktopReleases', () => {
+  it('should read the same file Obsidian\'s own updater reads', async () => {
+    const desktopReleases = {
+      latestVersion: '1.13.7',
+      minimumVersion: '1.1.9'
+    };
+    mockedRequestUrl.mockResolvedValue(createResponse(desktopReleases));
+    await expect(fetchDesktopReleases()).resolves.toEqual(desktopReleases);
+    expect(mockedRequestUrl).toHaveBeenCalledWith(DESKTOP_RELEASES_JSON_URL);
+  });
+});
+
+describe('fetchGitHubReleases', () => {
+  it('should read the releases newest first', async () => {
+    mockedRequestUrl.mockResolvedValue(createResponse(RELEASES));
+    await expect(fetchGitHubReleases()).resolves.toEqual(RELEASES);
+    expect(mockedRequestUrl).toHaveBeenCalledWith(GITHUB_RELEASES_URL);
+  });
+});
+
 function createChangelogEntry(title: string, url: string): ChangelogEntry {
   return { title, url };
 }
@@ -140,4 +201,8 @@ function createRelease(tagName: string, assetNames: readonly string[], body = ''
     /* eslint-disable-next-line camelcase -- GitHub publishes the tag as `tag_name`; a fixture that renamed it would stop matching the payload it stands in for. */
     tag_name: tagName
   };
+}
+
+function createResponse(json: unknown): RequestUrlResponse {
+  return castTo<RequestUrlResponse>({ json });
 }

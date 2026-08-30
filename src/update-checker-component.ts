@@ -167,7 +167,7 @@ export class UpdateCheckerComponent extends ComponentEx {
         continue;
       }
 
-      this.pluginNoticeComponent.showNotice(createUpdateNoticeFragment(status));
+      this.pluginNoticeComponent.showNotice(createUpdateNoticeFragment(status, status.latestVersion));
       await this.pluginSettingsComponent.recordNotified(status.id, status.latestVersion);
     }
   }
@@ -207,9 +207,9 @@ export class UpdateCheckerComponent extends ComponentEx {
   }
 }
 
-function createUpdateNoticeFragment(status: ReleaseStreamStatus): DocumentFragment {
+function createUpdateNoticeFragment(status: ReleaseStreamStatus, version: string): DocumentFragment {
   return createFragment((f) => {
-    f.appendText(createUpdateNoticeText(status));
+    f.appendText(createUpdateNoticeText(status, version));
     f.createEl('br');
     f.createEl('a', {
       href: status.changelogUrl,
@@ -224,11 +224,11 @@ function createUpdateNoticeFragment(status: ReleaseStreamStatus): DocumentFragme
  * 1.13.7 is available" reads as though the app were out of date when it may not be.
  *
  * @param status - The stream status.
+ * @param version - The version being announced. Passed in rather than read off the status, because the
+ * caller has already established it is known — a status with an unknown version is never announced.
  * @returns The notice text.
  */
-function createUpdateNoticeText(status: ReleaseStreamStatus): string {
-  const version = status.latestVersion ?? '';
-
+function createUpdateNoticeText(status: ReleaseStreamStatus, version: string): string {
   switch (status.id) {
     case ReleaseStreamId.Beta: {
       return `Obsidian ${version} is available on the insider (Catalyst) channel.`;
