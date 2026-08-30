@@ -1,12 +1,15 @@
 # App Update Notifier
 
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/mnaoumov) [![GitHub release](https://img.shields.io/github/v/release/mnaoumov/obsidian-app-update-notifier)](https://github.com/mnaoumov/obsidian-app-update-notifier/releases) [![GitHub downloads](https://img.shields.io/github/downloads/mnaoumov/obsidian-app-update-notifier/total)](https://github.com/mnaoumov/obsidian-app-update-notifier/releases) [![Coverage: 100%](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/mnaoumov/obsidian-app-update-notifier)
+
 Turning off Obsidian's automatic updates also turns off its checking, so from then on nothing tells you a release happened — and the installer version, which carries the Electron that gates several Obsidian features, is never checked at all. This plugin watches all three release streams — the app, the insider (Catalyst) build and the installer — reports what is behind in the status bar, and announces each new version exactly once with a link to its changelog. It never installs anything.
 
 <!-- markdownlint-disable MD033 -->
 
 <a href="https://github.com/mnaoumov/obsidian-app-update-notifier/blob/HEAD/images/screenshots/screenshot-desktop-1.png"><img src="images/screenshots/screenshot-desktop-1.png" alt="Every option in one place, including what Obsidian itself is set to" width="600"></a>
 
-<details><summary>More screenshots</summary>
+<details>
+<summary>More screenshots</summary>
 
 <div>
 <a href="https://github.com/mnaoumov/obsidian-app-update-notifier/blob/HEAD/images/screenshots/screenshot-desktop-2.png"><img src="images/screenshots/screenshot-desktop-2.png" alt="Every stream it watches, with a changelog link on each" width="600"></a>
@@ -20,13 +23,15 @@ Turning off Obsidian's automatic updates also turns off its checking, so from th
 
 ## Demo vault
 
-A demo vault with usage examples ships with every release. You can access it via any of the following:
+**The documentation is a demo vault.** Every feature has a note that explains what it does and why you would want it, with buttons that run a real check, read what this machine is actually running, and forget which versions you have already been told about — so you see the plugin working rather than read a description of it.
 
-1. Run the **App Update Notifier: Open demo vault** command.
-2. Download `app-update-notifier-demo-vault-<version>.zip` — where `<version>` is the release version — from the [Releases](https://github.com/mnaoumov/obsidian-app-update-notifier/releases).
-3. Browse [`demo-vault/`](./demo-vault/README.md).
+**[Start reading here](<./demo-vault/00 Start.md>)** — it is plain markdown, so it works on GitHub with nothing installed.
 
-Start reading here: [`demo-vault/00 Start.md`](<./demo-vault/00 Start.md>). It is plain markdown and reads on GitHub with nothing installed.
+A copy of the vault ships with every release. You can access it via any of the following:
+
+1. Running the **App Update Notifier: Open demo vault** command.
+2. Downloading `app-update-notifier-demo-vault-<version>.zip` (`<version>` is the release version) from the [Releases](https://github.com/mnaoumov/obsidian-app-update-notifier/releases).
+3. Browsing its source in [`demo-vault/`](./demo-vault/README.md) in this repository.
 
 ## What it does
 
