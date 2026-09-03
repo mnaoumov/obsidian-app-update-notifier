@@ -28,6 +28,7 @@ import {
   captureObsidianScreenshot,
   evalInObsidian,
   labelScreenshot,
+  pollInObsidian,
   readPngDimensions
 } from 'obsidian-integration-testing';
 import { getTemporaryVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
@@ -58,7 +59,18 @@ const WIDTH_IN_PIXELS = 900;
 const HEIGHT_IN_PIXELS = 1600;
 
 const PLUGIN_ID = 'app-update-notifier';
+const STATUS_BAR_SELECTOR = '.app-update-notifier-status-bar-item';
 const MODAL_SELECTOR = '.app-update-notifier-details-modal';
+
+/*
+ * The waiting is done from Node rather than inside a closure, for the reason
+ * `update-check.cross-platform.integration.test.ts` records at length (`T796-P41`): one closure is capped
+ * at ~30s by the transport, which Appium reports as a bare `script timeout`. A real check on this cold,
+ * rarely-used AVD is exactly the thing that outlasts it.
+ */
+const FEED_TIMEOUT_IN_MILLISECONDS = 90_000;
+const RENDER_TIMEOUT_IN_MILLISECONDS = 30_000;
+const POLL_INTERVAL_IN_MILLISECONDS = 1000;
 
 const IMAGES_DIRECTORY = join(process.cwd(), 'images', 'screenshots');
 
@@ -102,25 +114,53 @@ describe('mobile store screenshots', () => {
  * @returns What the panel rendered.
  */
 async function openDetailsPanel(): Promise<DetailsProbe> {
-  return await evalInObsidian({
-    async callback({
-      app,
-      lib: { waitUntil },
-      modalSelector,
-      pluginId
-    }): Promise<DetailsProbe> {
-      const FEED_TIMEOUT_IN_MILLISECONDS = 90_000;
+  await evalInObsidian({
+    async callback({ app }): Promise<void> {
       const SETTLE_DELAY_IN_MILLISECONDS = 2000;
 
       app.setting.close();
       await sleep(SETTLE_DELAY_IN_MILLISECONDS);
+    },
+    input: {},
+    vaultPath: vaultPath()
+  });
 
+  /*
+   * Wait for a check to reach a real answer BEFORE opening the panel. Without this the command opens a
+   * panel that has nothing to render yet, and the shot is of an empty modal — which is how this suite
+   * failed on a freshly booted emulator whose network had not validated (`T934-P2`). The desktop twin has
+   * always waited here; the mobile one had not.
+   */
+  await pollInObsidian({
+    input: { statusBarSelector: STATUS_BAR_SELECTOR },
+    intervalInMilliseconds: POLL_INTERVAL_IN_MILLISECONDS,
+    poll({ statusBarSelector }): string {
+      return document.querySelector(statusBarSelector)?.textContent ?? '';
+    },
+    timeoutInMilliseconds: FEED_TIMEOUT_IN_MILLISECONDS,
+    timeoutMessage: 'a check never reached a real answer',
+    until: (statusBarText: string): boolean => statusBarText !== '' && !statusBarText.includes('not checked'),
+    vaultPath: vaultPath()
+  });
+
+  await pollInObsidian({
+    input: { modalSelector: MODAL_SELECTOR, pluginId: PLUGIN_ID },
+    intervalInMilliseconds: POLL_INTERVAL_IN_MILLISECONDS,
+    poll({ modalSelector }): boolean {
+      return document.querySelector(modalSelector) !== null;
+    },
+    start({ app, pluginId }): void {
       app.commands.executeCommandById(`${pluginId}:check-for-updates`);
-      await waitUntil({
-        message: 'the details panel to open',
-        predicate: () => document.querySelector(modalSelector) !== null,
-        timeoutInMilliseconds: FEED_TIMEOUT_IN_MILLISECONDS
-      });
+    },
+    timeoutInMilliseconds: FEED_TIMEOUT_IN_MILLISECONDS,
+    timeoutMessage: 'the details panel never opened',
+    until: (isModalOpen: boolean): boolean => isModalOpen,
+    vaultPath: vaultPath()
+  });
+
+  return await evalInObsidian({
+    async callback({ modalSelector }): Promise<DetailsProbe> {
+      const SETTLE_DELAY_IN_MILLISECONDS = 2000;
 
       await sleep(SETTLE_DELAY_IN_MILLISECONDS);
 
@@ -132,10 +172,7 @@ async function openDetailsPanel(): Promise<DetailsProbe> {
         streamHeadings: [...modalEl?.querySelectorAll('h3') ?? []].map((el) => el.textContent)
       };
     },
-    input: {
-      modalSelector: MODAL_SELECTOR,
-      pluginId: PLUGIN_ID
-    },
+    input: { modalSelector: MODAL_SELECTOR },
     vaultPath: vaultPath()
   });
 }
@@ -146,11 +183,15 @@ async function openDetailsPanel(): Promise<DetailsProbe> {
  * @returns The names of the rendered settings.
  */
 async function openSettingsTab(): Promise<SettingsProbe> {
-  return await evalInObsidian({
-    async callback({ app, lib: { waitUntil }, pluginId }): Promise<SettingsProbe> {
-      const RENDER_TIMEOUT_IN_MILLISECONDS = 30_000;
+  await pollInObsidian({
+    input: { pluginId: PLUGIN_ID },
+    intervalInMilliseconds: POLL_INTERVAL_IN_MILLISECONDS,
+    poll(): boolean {
+      return [...document.querySelectorAll('.setting-item-name')]
+        .some((name) => name.textContent === 'Check interval');
+    },
+    async start({ app, pluginId }): Promise<void> {
       const OPEN_DELAY_IN_MILLISECONDS = 500;
-      const SETTLE_DELAY_IN_MILLISECONDS = 1500;
 
       const settingsModal: unknown = app.setting;
       const containerEl = (settingsModal as SettingsModalWithContainer).containerEl;
@@ -161,14 +202,16 @@ async function openSettingsTab(): Promise<SettingsProbe> {
       app.setting.open();
       await sleep(OPEN_DELAY_IN_MILLISECONDS);
       app.setting.openTabById(pluginId);
+    },
+    timeoutInMilliseconds: RENDER_TIMEOUT_IN_MILLISECONDS,
+    timeoutMessage: 'the settings tab never rendered its rows',
+    until: (areRowsRendered: boolean): boolean => areRowsRendered,
+    vaultPath: vaultPath()
+  });
 
-      await waitUntil({
-        message: 'the settings tab to render its rows',
-        predicate: () =>
-          [...document.querySelectorAll('.setting-item-name')]
-            .some((name) => name.textContent === 'Check interval'),
-        timeoutInMilliseconds: RENDER_TIMEOUT_IN_MILLISECONDS
-      });
+  return await evalInObsidian({
+    async callback(): Promise<SettingsProbe> {
+      const SETTLE_DELAY_IN_MILLISECONDS = 1500;
 
       await sleep(SETTLE_DELAY_IN_MILLISECONDS);
 
@@ -176,7 +219,7 @@ async function openSettingsTab(): Promise<SettingsProbe> {
         settingNames: [...document.querySelectorAll('.setting-item-name')].map((name) => name.textContent)
       };
     },
-    input: { pluginId: PLUGIN_ID },
+    input: {},
     vaultPath: vaultPath()
   });
 }
