@@ -16,6 +16,19 @@
  *
  * There is no mobile equivalent of the desktop viewport override, so the capture is always the device's
  * own framebuffer, and the AVD is built at exactly 900x1600.
+ *
+ * **These shots are not byte-stable, and were never going to be.** Shot 1 is the settings panel — no
+ * clock, no timestamp, nothing time-dependent in the frame — and it still came back 3 bytes different
+ * between two runs of an unchanged plugin (136378 → 136381), so the churn is compression noise rather
+ * than anything that could be blanked out (`T971-P41`). A capture always rewrites both PNGs; `git status`
+ * is not the check, the assertions are, and a shot whose only difference is that noise should be
+ * restored rather than committed.
+ *
+ * **There is also no version pin here, unlike the desktop half.** `scripts/vitest-config.ts` pins the
+ * desktop capture's app and installer so shot 2 always shows something behind, but the Android transport
+ * exposes no version knob at all — the app is whatever APK the AVD carries — and the mobile panel has no
+ * installer stream to be behind in the first place. That is why the mobile shot promises only the app
+ * stream with its changelog link, and asserts nothing about anything being out of date.
  */
 
 import {
@@ -61,6 +74,7 @@ const HEIGHT_IN_PIXELS = 1600;
 const PLUGIN_ID = 'app-update-notifier';
 const STATUS_BAR_SELECTOR = '.app-update-notifier-status-bar-item';
 const MODAL_SELECTOR = '.app-update-notifier-details-modal';
+const NOTICE_SELECTOR = '.notice';
 
 /*
  * The waiting is done from Node rather than inside a closure, for the reason
@@ -107,6 +121,33 @@ describe('mobile store screenshots', () => {
     await shoot(2, 'The app stream, with a changelog link — no installer on mobile');
   });
 });
+
+/**
+ * Clears any notice standing over the UI, immediately before a capture.
+ *
+ * The desktop twin needs this because its pinned installer makes the plugin's own update notice fire on
+ * every run; nothing is pinned here, so whether a notice is up depends on what the AVD's Obsidian is
+ * against the public feed that day. Either way a toast across the panel is not what the shot promises,
+ * and whether it has faded by the time the shutter opens is exactly the luck this suite is being taken
+ * out of.
+ *
+ * @returns A {@link Promise} that resolves once the notices are gone and the device has repainted.
+ */
+async function dismissNotices(): Promise<void> {
+  await evalInObsidian({
+    async callback({ noticeSelector }): Promise<void> {
+      const REPAINT_DELAY_IN_MILLISECONDS = 500;
+
+      for (const noticeEl of document.querySelectorAll(noticeSelector)) {
+        noticeEl.remove();
+      }
+
+      await sleep(REPAINT_DELAY_IN_MILLISECONDS);
+    },
+    input: { noticeSelector: NOTICE_SELECTOR },
+    vaultPath: vaultPath()
+  });
+}
 
 /**
  * Waits for a real check, then opens the details panel through the plugin's own command.
@@ -232,6 +273,8 @@ async function openSettingsTab(): Promise<SettingsProbe> {
  * @param caption - The caption drawn across the bottom of the frame.
  */
 async function shoot(index: number, caption: string): Promise<void> {
+  await dismissNotices();
+
   const bytes = await captureObsidianScreenshot({
     heightInPixels: HEIGHT_IN_PIXELS,
     vaultPath: vaultPath(),

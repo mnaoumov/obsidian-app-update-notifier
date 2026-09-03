@@ -29,6 +29,37 @@ const ANDROID_CAPTURE_TEST_FILES = 'src/**/*.android-capture.integration.test.ts
  */
 const SCREENSHOT_AVD_NAME = 'obsidian_screenshots';
 
+/**
+ * The Electron shell (installer build) the desktop shots are taken on, frozen deliberately.
+ *
+ * Shot 2 is the details panel, and the frame worth putting in front of a store visitor is the one where
+ * the plugin has something to report: the app current, the installer behind, and the two update routes in
+ * view. An installer frozen well below the public line produces that frame on ANY day, because `Latest`
+ * only ever moves up — where an unpinned run produces whatever the machine happens to have. `1.13.4` is
+ * the exact installer the committed 2026-08-30 shot ran, so a recapture reproduces that frame rather than
+ * replacing it.
+ *
+ * When a future `public-latest` asar stops booting on this shell the harness throws
+ * `IncompatibleInstallerVersionError` from version resolution, before anything is launched — a loud
+ * prompt to raise this pin, never a silently worse screenshot.
+ */
+const CAPTURE_INSTALLER_VERSION = '1.13.4';
+
+/**
+ * The Obsidian app version (asar) the desktop shots are taken on.
+ *
+ * `public-latest` rather than the user's installed copy, because the harness now provisions a Catalyst
+ * build: the 2026-09-03 recapture booted `1.14.0` and the panel read `Installed: 1.14.0 / Latest: 1.13.7 /
+ * Up to date.` — the plugin reporting correctly against the PUBLIC feed it watches, but a version pair
+ * that reads as nonsense to a store visitor (`T971-P41`). Following the public line keeps the App row
+ * saying `Up to date.` and keeps the shots on current Obsidian chrome.
+ *
+ * This overrides the `OBSIDIAN_VERSION` escape hatch `obsidian-dev-utils` honours on
+ * `integration-tests:desktop`, for this project only: a capture is not a test run, and a screenshot taken
+ * against an arbitrary version is the defect above.
+ */
+const CAPTURE_OBSIDIAN_VERSION = 'public-latest';
+
 const APPIUM_URL = 'http://localhost:4723';
 
 /**
@@ -60,6 +91,13 @@ export const config = defineObsidianPluginVitestConfig({
       {
         test: {
           ...context.desktop,
+          environmentOptions: {
+            obsidianTransport: {
+              obsidianInstallerVersion: CAPTURE_INSTALLER_VERSION,
+              obsidianVersion: CAPTURE_OBSIDIAN_VERSION,
+              type: 'obsidian-cdp'
+            }
+          },
           include: [DESKTOP_CAPTURE_TEST_FILES],
           name: 'capture-screenshots:desktop'
         }
