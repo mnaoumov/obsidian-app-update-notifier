@@ -33,6 +33,7 @@ import {
   captureObsidianScreenshot,
   evalInObsidian,
   labelScreenshot,
+  pollInObsidian,
   readPngDimensions
 } from 'obsidian-integration-testing';
 import { getTemporaryVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
@@ -66,6 +67,14 @@ const HEIGHT_IN_PIXELS = 800;
 const PLUGIN_ID = 'app-update-notifier';
 const STATUS_BAR_SELECTOR = '.app-update-notifier-status-bar-item';
 const MODAL_SELECTOR = '.app-update-notifier-details-modal';
+
+/*
+ * The feed waiting is done from Node rather than inside a closure, for the reason
+ * `update-check.cross-platform.integration.test.ts` records at length (`T796-P41`): one closure is capped
+ * at ~30s by the transport, and a check on a cold instance can outlast that.
+ */
+const FEED_TIMEOUT_IN_MILLISECONDS = 60_000;
+const POLL_INTERVAL_IN_MILLISECONDS = 1000;
 
 const IMAGES_DIRECTORY = join(process.cwd(), 'images', 'screenshots');
 
@@ -111,40 +120,49 @@ describe('desktop store screenshots', () => {
  * @returns What the panel rendered.
  */
 async function openDetailsPanel(): Promise<DetailsProbe> {
-  return await evalInObsidian({
-    async callback({
-      app,
-      lib: { waitUntil },
-      modalSelector,
-      pluginId,
-      statusBarSelector
-    }): Promise<DetailsProbe> {
-      const FEED_TIMEOUT_IN_MILLISECONDS = 60_000;
+  // Let the previous shot's capture settle: the device-metrics override it sets and clears disturbs
+  // Anything opened too soon afterwards.
+  await evalInObsidian({
+    async callback({ app }): Promise<void> {
       const RESIZE_SETTLE_DELAY_IN_MILLISECONDS = 2000;
-      const SETTLE_DELAY_IN_MILLISECONDS = 1500;
 
-      // Let the previous shot's capture settle: the device-metrics override it sets and clears disturbs
-      // Anything opened too soon afterwards.
       app.setting.close();
       await sleep(RESIZE_SETTLE_DELAY_IN_MILLISECONDS);
+    },
+    input: {},
+    vaultPath: vaultPath()
+  });
 
-      await waitUntil({
-        message: 'a check to reach a real answer',
-        predicate: () => {
-          const text = document.querySelector(statusBarSelector)?.textContent ?? '';
-          return text !== '' && !text.includes('not checked');
-        },
-        timeoutInMilliseconds: FEED_TIMEOUT_IN_MILLISECONDS
-      });
+  const statusBarText = await pollInObsidian({
+    input: { statusBarSelector: STATUS_BAR_SELECTOR },
+    intervalInMilliseconds: POLL_INTERVAL_IN_MILLISECONDS,
+    poll({ statusBarSelector }): string {
+      return document.querySelector(statusBarSelector)?.textContent ?? '';
+    },
+    timeoutInMilliseconds: FEED_TIMEOUT_IN_MILLISECONDS,
+    timeoutMessage: 'a check never reached a real answer',
+    until: (text: string): boolean => text !== '' && !text.includes('not checked'),
+    vaultPath: vaultPath()
+  });
 
-      const statusBarText = document.querySelector(statusBarSelector)?.textContent ?? '';
-
+  await pollInObsidian({
+    input: { modalSelector: MODAL_SELECTOR, pluginId: PLUGIN_ID },
+    intervalInMilliseconds: POLL_INTERVAL_IN_MILLISECONDS,
+    poll({ modalSelector }): boolean {
+      return document.querySelector(modalSelector) !== null;
+    },
+    start({ app, pluginId }): void {
       app.commands.executeCommandById(`${pluginId}:check-for-updates`);
-      await waitUntil({
-        message: 'the details panel to open',
-        predicate: () => document.querySelector(modalSelector) !== null,
-        timeoutInMilliseconds: FEED_TIMEOUT_IN_MILLISECONDS
-      });
+    },
+    timeoutInMilliseconds: FEED_TIMEOUT_IN_MILLISECONDS,
+    timeoutMessage: 'the details panel never opened',
+    until: (isModalOpen: boolean): boolean => isModalOpen,
+    vaultPath: vaultPath()
+  });
+
+  return await evalInObsidian({
+    async callback({ modalSelector, statusBarText: observedStatusBarText }): Promise<DetailsProbe> {
+      const SETTLE_DELAY_IN_MILLISECONDS = 1500;
 
       await sleep(SETTLE_DELAY_IN_MILLISECONDS);
 
@@ -153,14 +171,13 @@ async function openDetailsPanel(): Promise<DetailsProbe> {
         changelogLinkCount: [...modalEl?.querySelectorAll('a') ?? []]
           .filter((el) => (el.getAttribute('href') ?? '').startsWith('https://obsidian.md/changelog'))
           .length,
-        statusBarText,
+        statusBarText: observedStatusBarText,
         streamHeadings: [...modalEl?.querySelectorAll('h3') ?? []].map((el) => el.textContent)
       };
     },
     input: {
       modalSelector: MODAL_SELECTOR,
-      pluginId: PLUGIN_ID,
-      statusBarSelector: STATUS_BAR_SELECTOR
+      statusBarText
     },
     vaultPath: vaultPath()
   });

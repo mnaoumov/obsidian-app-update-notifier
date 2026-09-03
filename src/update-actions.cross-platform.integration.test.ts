@@ -1,4 +1,7 @@
-import { evalInObsidian } from 'obsidian-integration-testing';
+import {
+  evalInObsidian,
+  pollInObsidian
+} from 'obsidian-integration-testing';
 import {
   describe,
   expect,
@@ -25,11 +28,23 @@ import {
  * `runtimeVersions`, which is absent for every current Obsidian (`T717-P2`), so there is nothing real to
  * observe yet — asserting its absence would only pin the data gap in place. Its branches are covered by
  * the fixture-driven unit tests in `update-details-modal.test.ts` and `electron-span.test.ts`.
+ *
+ * The feed waiting is done from Node rather than inside a closure, for the reason
+ * `update-check.cross-platform.integration.test.ts` records at length (`T796-P41`): one closure is capped
+ * at ~30s by the transport, which is less than a real check costs on an emulator.
  */
 
 const PLUGIN_ID = 'app-update-notifier';
 const MODAL_SELECTOR = '.app-update-notifier-details-modal';
 const STATUS_BAR_SELECTOR = '.app-update-notifier-status-bar-item';
+
+const FEED_TIMEOUT_IN_MILLISECONDS = 90_000;
+const POLL_INTERVAL_IN_MILLISECONDS = 1000;
+
+interface PanelProbe {
+  readonly isModalOpen: boolean;
+  readonly observations: null | UpdateActionsObservations;
+}
 
 interface StreamObservation {
   readonly actionLinkTexts: string[];
@@ -47,35 +62,36 @@ interface UpdateActionsObservations {
 
 describe('The routes offered for a real update', () => {
   it('offers both install routes on every row reporting an update, and none on a row that is up to date', async () => {
-    const observations = await evalInObsidian({
-      async callback({
-        app,
-        lib: { waitUntil },
+    await pollInObsidian({
+      input: { statusBarSelector: STATUS_BAR_SELECTOR },
+      intervalInMilliseconds: POLL_INTERVAL_IN_MILLISECONDS,
+      poll({ statusBarSelector }): string {
+        return document.querySelector(statusBarSelector)?.textContent ?? '';
+      },
+      timeoutInMilliseconds: FEED_TIMEOUT_IN_MILLISECONDS,
+      timeoutMessage: 'a check never reached a real answer',
+      until: (statusBarText: string): boolean => statusBarText !== '' && !statusBarText.includes('not checked')
+    });
+
+    const panel = await pollInObsidian({
+      input: {
+        modalSelector: MODAL_SELECTOR,
+        pluginId: PLUGIN_ID
+      },
+      intervalInMilliseconds: POLL_INTERVAL_IN_MILLISECONDS,
+      poll({
         modalSelector,
-        obsidianModule,
-        pluginId,
-        statusBarSelector
-      }): Promise<UpdateActionsObservations> {
-        const FEED_TIMEOUT_IN_MILLISECONDS = 90_000;
-
-        await waitUntil({
-          message: 'a check to reach a real answer',
-          predicate: () => {
-            const text = document.querySelector(statusBarSelector)?.textContent ?? '';
-            return text !== '' && !text.includes('not checked');
-          },
-          timeoutInMilliseconds: FEED_TIMEOUT_IN_MILLISECONDS
-        });
-
-        app.commands.executeCommandById(`${pluginId}:check-for-updates`);
-        await waitUntil({
-          message: 'the details panel to open',
-          predicate: () => document.querySelector(modalSelector) !== null,
-          timeoutInMilliseconds: FEED_TIMEOUT_IN_MILLISECONDS
-        });
-
+        obsidianModule
+      }): PanelProbe {
         const modalEl = document.querySelector(modalSelector);
-        const streamEls = [...modalEl?.querySelectorAll(':scope .app-update-notifier-stream') ?? []];
+        if (!modalEl) {
+          return {
+            isModalOpen: false,
+            observations: null
+          };
+        }
+
+        const streamEls = [...modalEl.querySelectorAll(':scope .app-update-notifier-stream')];
 
         const streams = streamEls.map((streamEl): StreamObservation => {
           const actionsEl = streamEl.querySelector(':scope .app-update-notifier-actions');
@@ -88,33 +104,46 @@ describe('The routes offered for a real update', () => {
           };
         });
 
-        const downloadUrls = [...modalEl?.querySelectorAll(':scope a') ?? []]
+        const downloadUrls = [...modalEl.querySelectorAll(':scope a')]
           .map((linkEl) => linkEl.getAttribute('href') ?? '')
           .filter((href) => href.startsWith('https://obsidian.md/download'));
 
-        const observed: UpdateActionsObservations = {
-          downloadUrls,
-          isDesktopApp: obsidianModule.Platform.isDesktopApp,
-          streams
+        return {
+          isModalOpen: true,
+          observations: {
+            downloadUrls,
+            isDesktopApp: obsidianModule.Platform.isDesktopApp,
+            streams
+          }
         };
+      },
+      start({
+        app,
+        pluginId
+      }): void {
+        app.commands.executeCommandById(`${pluginId}:check-for-updates`);
+      },
+      timeoutInMilliseconds: FEED_TIMEOUT_IN_MILLISECONDS,
+      timeoutMessage: 'the details panel never opened',
+      until: (probe: PanelProbe): boolean => probe.isModalOpen
+    });
 
+    await evalInObsidian({
+      callback(): void {
         for (const closeEl of document.querySelectorAll('.modal-close-button')) {
           (closeEl as HTMLElement).click();
         }
-
-        return observed;
       },
-      input: {
-        modalSelector: MODAL_SELECTOR,
-        pluginId: PLUGIN_ID,
-        statusBarSelector: STATUS_BAR_SELECTOR
-      }
+      input: {}
     });
 
-    // A real check reached a real answer and the panel listed at least the app stream.
-    expect(observations.streams.length).toBeGreaterThan(0);
+    const observations = panel.observations;
+    expect(observations).not.toBeNull();
 
-    for (const stream of observations.streams) {
+    // A real check reached a real answer and the panel listed at least the app stream.
+    expect(observations?.streams.length).toBeGreaterThan(0);
+
+    for (const stream of observations?.streams ?? []) {
       // The invariant, in both directions: routes exactly where there is something to act on.
       expect(stream.hasActions).toBe(stream.isUpdateAvailable);
 
@@ -145,8 +174,8 @@ describe('The routes offered for a real update', () => {
      * too low" recommendation builds (`app.js:61875-61886`) — never the bare download page, which would
      * make the reader pick their own OS.
      */
-    for (const downloadUrl of observations.downloadUrls) {
-      expect(downloadUrl).toMatch(observations.isDesktopApp ? /[?&]os=(?:win|mac|linux)&arch=/ : /[?&]os=(?:android|ios)/);
+    for (const downloadUrl of observations?.downloadUrls ?? []) {
+      expect(downloadUrl).toMatch(observations?.isDesktopApp ? /[?&]os=(?:win|mac|linux)&arch=/ : /[?&]os=(?:android|ios)/);
     }
   });
 });
