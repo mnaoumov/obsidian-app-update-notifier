@@ -12,11 +12,27 @@
  * 2. The details panel — every watched stream, what is installed against what is published, and a
  *    changelog link for each, with the status bar item that opened it visible behind.
  *
- * **Opening the settings modal takes one extra step, and without it nothing renders.** `app.setting`
- * exists from startup but its `containerEl` is NOT in the document, and `open()` returns without
- * attaching it — so the modal builds into a detached tree and the captured document stays empty. Append
- * `containerEl` to `document.body` BEFORE calling `open()` and it renders normally. Attaching afterwards
- * is too late: the default tab has already been rendered into the detached container.
+ * **The settings modal must be told NOT to open in its own window, or the shot is of an empty one.**
+ * `app.setting` is popout-capable: its `shouldUsePopout()` returns `app.vault.getConfig('settingsPopoutWindow')`,
+ * which Obsidian's own default config sets to `true` (verified in the shipped bundles of both 1.13.7 and
+ * 1.14.0), and the popout branch is taken whenever `Platform.canPopoutWindow` — `isDesktopApp && isDesktop`,
+ * so on every desktop and no mobile. That branch creates a real second Electron window, reassigns the
+ * `activeWindow` / `activeDocument` globals to it, and the base `Modal.open()` then appends `getRootEl()`
+ * — `modalEl` for a popout — into THAT window's document. Measured 2026-09-03 (`T962-P41`): the main
+ * document was left holding three `.setting-item-name` rows, all of them the search sidebar's, so a wait
+ * for `Check interval` could only ever time out. `setConfig('settingsPopoutWindow', false)` before
+ * `open()` keeps the modal in the window `captureObsidianScreenshot` actually photographs.
+ *
+ * A settings test that only asserts can dodge this by querying `settingTab.containerEl` — an object
+ * reference, wherever it lives — the way `obsidian-advanced-note-composer`'s
+ * `settings-page-navigation.desktop.integration.test.ts` does. A screenshot cannot: the capture is of the
+ * main window, so a popout produces a frame with no settings in it and no error to say so.
+ *
+ * **`open()` attaches `containerEl` itself**, once the popout is off — measured in the same run, which
+ * went from `document.body.contains(containerEl) === false` before the call to `true` after it, with
+ * `modalEl` inside. An earlier version of this file pre-appended `containerEl` to `document.body` on the
+ * premise that `open()` returns without attaching; that premise does not hold for the Obsidian this
+ * harness provisions, and the pre-append is gone with it.
  *
  * There is deliberately no "an update is available" shot. Whether anything is behind depends on what
  * Obsidian has released this week and on the version the harness happens to boot, so such a frame could
@@ -50,15 +66,17 @@ interface DetailsProbe {
   readonly streamHeadings: string[];
 }
 
-/**
- * Obsidian's settings modal, reduced to the container `obsidian-typings` does not declare.
- */
-interface SettingsModalWithContainer {
-  containerEl: HTMLElement;
-}
-
 interface SettingsProbe {
   readonly settingNames: string[];
+}
+
+/**
+ * Obsidian's vault config, reduced to the one key `obsidian-typings` does not declare. Its `ConfigItem`
+ * union lists fifty keys and `settingsPopoutWindow` is not among them, so the call needs a cast until it
+ * is (`T970-P8`).
+ */
+interface VaultWithPopoutConfig {
+  setConfig(key: 'settingsPopoutWindow', shouldUsePopout: boolean): void;
 }
 
 const WIDTH_IN_PIXELS = 1200;
@@ -196,16 +214,13 @@ async function openSettingsTab(): Promise<SettingsProbe> {
       const SETTLE_DELAY_IN_MILLISECONDS = 1500;
 
       /*
-       * The one step that makes this work. `app.setting.containerEl` is built at startup but never
-       * attached, and `open()` does not attach it — so the modal renders into a detached tree and nothing
-       * reaches the captured document. Attaching afterwards is too late: the default tab has already been
-       * rendered into the detached container.
+       * The one step that makes this work, and it must come BEFORE `open()` — `shouldUsePopout()` is read
+       * inside the call. Left at Obsidian's default the settings go into a second Electron window, taking
+       * `activeWindow` / `activeDocument` with them, and this document never sees a row. The file header
+       * records the mechanism and what was measured.
        */
-      const settingsModal: unknown = app.setting;
-      const containerEl = (settingsModal as SettingsModalWithContainer).containerEl;
-      if (!document.body.contains(containerEl)) {
-        document.body.append(containerEl);
-      }
+      const vault: unknown = app.vault;
+      (vault as VaultWithPopoutConfig).setConfig('settingsPopoutWindow', false);
 
       app.setting.open();
       await sleep(OPEN_DELAY_IN_MILLISECONDS);
