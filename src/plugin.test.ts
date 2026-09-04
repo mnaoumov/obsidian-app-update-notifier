@@ -18,14 +18,6 @@ interface ComponentModuleActual {
   Component: new () => object;
 }
 
-interface PluginsLike {
-  getPlugin: ReturnType<typeof vi.fn>;
-}
-
-interface PluginsMock {
-  plugins: PluginsLike;
-}
-
 interface SaveSettingsListenerHolder {
   saveSettingsListeners: (() => void)[];
 }
@@ -146,9 +138,5 @@ function createConfiguredApp(): App {
   appMock.workspace.onLayoutReady = vi.fn((callback: () => void) => {
     callback();
   });
-  // The strict App mock throws on an unmocked member, so `plugins` is assigned wholesale before use.
-  castTo<PluginsMock>(appMock).plugins = {
-    getPlugin: vi.fn().mockReturnValue(null)
-  };
   return appMock.asOriginalType__();
 }
