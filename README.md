@@ -30,7 +30,7 @@ Turning off Obsidian's automatic updates also turns off its checking, so from th
 A copy of the vault ships with every release. You can access it via any of the following:
 
 1. Running the **App Update Notifier: Open demo vault** command.
-2. Downloading `app-update-notifier-demo-vault-<version>.zip` (`<version>` is the release version) from the [Releases](https://github.com/mnaoumov/obsidian-app-update-notifier/releases).
+2. Downloading `app-update-notifier-demo-vault.zip` from the [Releases](https://github.com/mnaoumov/obsidian-app-update-notifier/releases). It unzips into a single `app-update-notifier-demo-vault-<version>` folder.
 3. Browsing its source in [`demo-vault/`](./demo-vault/README.md) in this repository.
 
 ## What it does
