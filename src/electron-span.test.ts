@@ -46,8 +46,8 @@ describe('resolveElectronSpan', () => {
   describe('when an end is unknown', () => {
     /*
      * "We cannot tell" must never render as "there is nothing in between". This is the production state
-     * today for the target: the metadata feed's `runtimeVersions` is absent for every 1.13.x
-     * (`T717-P2`), so every real call currently lands here.
+     * today for the target: the metadata feed's `runtimeVersions` is absent for every 1.13.x, so every
+     * real call currently lands here.
      */
     it.each([
       ['the installed version is unknown', null, '36.0.0'],

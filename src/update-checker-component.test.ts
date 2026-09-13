@@ -97,7 +97,7 @@ beforeEach(() => {
   vi.mocked(getElectronVersion).mockReturnValue('34.5.8');
   vi.mocked(checkIsInsiderBuild).mockReturnValue(false);
 
-  // The real feed records nothing for any current version (`T717-P2`), so an empty index is the
+  // The real feed records nothing for any current version, so an empty index is the
   // Production default rather than a degenerate fixture. Individual tests populate it.
   vi.mocked(fetchObsidianMetadata).mockResolvedValue({});
 

@@ -22,7 +22,7 @@ import {
  * depends on how it was provisioned, so only the shape of the answer is checked.
  *
  * The feed waiting is done from Node rather than inside a closure, for the reason
- * `update-check.cross-platform.integration.test.ts` records at length (`T796-P41`): one closure is capped
+ * `update-check.cross-platform.integration.test.ts` records at length: one closure is capped
  * at ~30s by the transport. Desktop is fast enough today that this suite passed anyway; it is converted
  * so a slow feed day fails it as a real timeout rather than as a bare command timeout.
  */

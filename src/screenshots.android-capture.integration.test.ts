@@ -64,7 +64,7 @@ const MODAL_SELECTOR = '.app-update-notifier-details-modal';
 
 /*
  * The waiting is done from Node rather than inside a closure, for the reason
- * `update-check.cross-platform.integration.test.ts` records at length (`T796-P41`): one closure is capped
+ * `update-check.cross-platform.integration.test.ts` records at length: one closure is capped
  * at ~30s by the transport, which Appium reports as a bare `script timeout`. A real check on this cold,
  * rarely-used AVD is exactly the thing that outlasts it.
  */
@@ -128,7 +128,7 @@ async function openDetailsPanel(): Promise<DetailsProbe> {
   /*
    * Wait for a check to reach a real answer BEFORE opening the panel. Without this the command opens a
    * panel that has nothing to render yet, and the shot is of an empty modal — which is how this suite
-   * failed on a freshly booted emulator whose network had not validated (`T934-P2`). The desktop twin has
+   * failed on a freshly booted emulator whose network had not validated. The desktop twin has
    * always waited here; the mobile one had not.
    */
   await pollInObsidian({

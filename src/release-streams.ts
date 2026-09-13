@@ -68,7 +68,7 @@ export interface ElectronStatus {
    * The Electron the NEWEST installer bundles, or `null` when it is not known.
    *
    * ⚠️ `null` for every current Obsidian today: the only source is the metadata feed's
-   * `runtimeVersions`, which is absent from every `1.13.x` entry (`T717-P2`). The whole Electron-span
+   * `runtimeVersions`, which is absent from every `1.13.x` entry. The whole Electron-span
    * half of the UI is therefore dark until that is backfilled, at which point it lights up on its own.
    */
   readonly targetVersion: null | string;

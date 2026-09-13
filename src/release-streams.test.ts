@@ -242,7 +242,7 @@ describe('the metadata feed as a changelog source', () => {
 
 describe('resolveElectronStatus', () => {
   it('should report the running Electron and no target while the feed records none', () => {
-    // The production state today — no 1.13.x entry carries `runtimeVersions` (`T717-P2`).
+    // The production state today — no 1.13.x entry carries `runtimeVersions`.
     expect(resolveElectronStatus(FEEDS, DESKTOP)).toEqual({
       currentVersion: '34.5.8',
       isOutdated: false,

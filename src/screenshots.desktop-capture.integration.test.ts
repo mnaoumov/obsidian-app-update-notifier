@@ -18,7 +18,7 @@
  * 1.14.0), and the popout branch is taken whenever `Platform.canPopoutWindow` — `isDesktopApp && isDesktop`,
  * so on every desktop and no mobile. That branch creates a real second Electron window, reassigns the
  * `activeWindow` / `activeDocument` globals to it, and the base `Modal.open()` then appends `getRootEl()`
- * — `modalEl` for a popout — into THAT window's document. Measured 2026-09-03 (`T962-P41`): the main
+ * — `modalEl` for a popout — into THAT window's document. Measured 2026-09-03: the main
  * document was left holding three `.setting-item-name` rows, all of them the search sidebar's, so a wait
  * for `Check interval` could only ever time out. `setConfig('settingsPopoutWindow', false)` before
  * `open()` keeps the modal in the window `captureObsidianScreenshot` actually photographs.
@@ -73,7 +73,7 @@ interface SettingsProbe {
 /**
  * Obsidian's vault config, reduced to the one key `obsidian-typings` does not declare. Its `ConfigItem`
  * union lists fifty keys and `settingsPopoutWindow` is not among them, so the call needs a cast until it
- * is (`T970-P8`).
+ * is.
  */
 interface VaultWithPopoutConfig {
   setConfig(key: 'settingsPopoutWindow', shouldUsePopout: boolean): void;
@@ -88,7 +88,7 @@ const MODAL_SELECTOR = '.app-update-notifier-details-modal';
 
 /*
  * The feed waiting is done from Node rather than inside a closure, for the reason
- * `update-check.cross-platform.integration.test.ts` records at length (`T796-P41`): one closure is capped
+ * `update-check.cross-platform.integration.test.ts` records at length: one closure is capped
  * at ~30s by the transport, and a check on a cold instance can outlast that.
  */
 const FEED_TIMEOUT_IN_MILLISECONDS = 60_000;

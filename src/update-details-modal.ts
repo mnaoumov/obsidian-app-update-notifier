@@ -134,9 +134,11 @@ class UpdateDetailsModal extends ModalBase<void> {
     paragraph.createEl('strong', { text: 'Electron: ' });
     paragraph.appendText(electron.currentVersion);
 
-    // Only when the newest installer would actually MOVE it. `targetVersion` is `null` for every
-    // Current Obsidian today, because the metadata feed's `runtimeVersions` stopped being populated
-    // (`T717-P2`), so this whole branch is dark until that is backfilled.
+    /*
+     * Only when the newest installer would actually MOVE it. `targetVersion` is `null` for every
+     * current Obsidian today, because the metadata feed's `runtimeVersions` stopped being populated,
+     * so this whole branch is dark until that is backfilled.
+     */
     if (electron.targetVersion !== null && electron.targetVersion !== electron.currentVersion) {
       paragraph.appendText(`, latest installer has Electron version ${electron.targetVersion}`);
       const spanEl = this.contentEl.createDiv({ cls: 'app-update-notifier-electron-span' });

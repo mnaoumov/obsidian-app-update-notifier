@@ -17,7 +17,7 @@
  * - **It lags.** On 2026-08-30 GitHub's newest release was `v1.13.8` while this file's newest entry was
  *   `1.13.7`, so it was already a version behind for the Android app stream.
  * - **It is sparse.** `runtimeVersions` is present on 103 of 325 entries and on NO `1.13.x` entry at
- *   all, so the Electron half of the update notice is dark until `T717-P2` backfills it.
+ *   all, so the Electron half of the update notice is dark until the feed backfills it.
  */
 
 import { requestUrl } from 'obsidian';
@@ -33,7 +33,7 @@ import { ChangelogPlatform } from './obsidian-releases-api.ts';
 export type ObsidianMetadata = Readonly<Record<string, ObsidianVersionMetadata | undefined>>;
 
 /**
- * The changelog URL of each publishing target, as `T679-P2` reshaped it from the single string it used
+ * The changelog URL of each publishing target, reshaped from the single string it used
  * to be. Every key is optional — a version with no mobile build carries no `mobile*` key.
  */
 export interface ObsidianVersionChangelogUrls {
@@ -97,7 +97,7 @@ export interface ObsidianVersionRuntimeVersions {
  * The published `metadata.json`.
  *
  * Served from `main` of a public repository, which is what makes it usable as a runtime feed at all —
- * `obsidian-versions` (`P20`) is not public, which is why `T647-P41` rejected it as a source.
+ * the `obsidian-versions` repository is not public, which is why it was rejected as a source.
  */
 export const OBSIDIAN_METADATA_URL = 'https://raw.githubusercontent.com/mnaoumov/obsidian-integration-testing/main/metadata.json';
 
@@ -152,8 +152,8 @@ export function getMetadataChangelogUrl(
 /**
  * Reads the Electron version the installer for a version bundles.
  *
- * ⚠️ Returns `null` for every `1.13.x` today — `runtimeVersions` has stopped being populated
- * (`T717-P2`). That is a data gap, not a failure, and the caller renders nothing rather than guessing.
+ * ⚠️ Returns `null` for every `1.13.x` today — `runtimeVersions` has stopped being populated. That is
+ * a data gap, not a failure, and the caller renders nothing rather than guessing.
  *
  * @param metadata - The metadata index, or `null` when the feed could not be read.
  * @param version - The bare INSTALLER version, e.g. `1.13.7`.

@@ -113,7 +113,7 @@ function appendCatalystGate(parent: UpdateActionsParent): void {
  * Appends the one-line Electron summary, when — and only when — both ends of it are actually known.
  *
  * ⚠️ Renders NOTHING today. The target version comes from the metadata feed's `runtimeVersions`, which
- * is absent from every `1.13.x` entry (`T717-P2`). That is deliberate: a notice that guessed, or that
+ * is absent from every `1.13.x` entry. That is deliberate: a notice that guessed, or that
  * said "unknown", would be worse than one that stays quiet until the data exists.
  *
  * @param parent - What to render into.
