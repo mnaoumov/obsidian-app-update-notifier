@@ -39,7 +39,7 @@ const MOBILE_CATALYST_URL = 'https://obsidian.md/changelog/2026-08-11-mobile-v1.
 
 /**
  * The real `1.13.7` entry as published on 2026-08-30, plus a `1.12.7` entry carrying the
- * `runtimeVersions` that 1.13.7 conspicuously lacks — which is the whole of `T717-P2`.
+ * `runtimeVersions` that 1.13.7 conspicuously lacks, which is the whole of the gap.
  */
 const METADATA: ObsidianMetadata = {
   '1.12.7': {
@@ -114,7 +114,7 @@ describe('getMetadataElectronVersion', () => {
     ['the version is unknown', METADATA, null],
     ['the feed could not be read', null, '1.12.7'],
     ['the feed has no entry for the version', METADATA, '1.13.8'],
-    // The production case today: no 1.13.x entry carries `runtimeVersions` at all (`T717-P2`).
+    // The production case today: no 1.13.x entry carries `runtimeVersions` at all.
     ['the entry records no runtime versions', METADATA, '1.13.7']
   ])('should answer nothing when %s', (_description, metadata, version) => {
     expect(getMetadataElectronVersion(metadata, version)).toBeNull();

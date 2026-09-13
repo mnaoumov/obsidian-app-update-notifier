@@ -25,7 +25,7 @@ vi.mock('./platform-ex.ts', () => ({
 
 /**
  * What the Electron half looks like TODAY: `targetVersion` is `null` for every current Obsidian,
- * because the metadata feed's `runtimeVersions` is absent for every 1.13.x (`T717-P2`).
+ * because the metadata feed's `runtimeVersions` is absent for every 1.13.x.
  */
 const ELECTRON: ElectronStatus = {
   currentVersion: '34.5.8',

@@ -25,12 +25,12 @@ import {
  * rendered unconditionally or dropped entirely.
  *
  * The Electron span is deliberately NOT asserted. Its target version comes from the metadata feed's
- * `runtimeVersions`, which is absent for every current Obsidian (`T717-P2`), so there is nothing real to
+ * `runtimeVersions`, which is absent for every current Obsidian, so there is nothing real to
  * observe yet — asserting its absence would only pin the data gap in place. Its branches are covered by
  * the fixture-driven unit tests in `update-details-modal.test.ts` and `electron-span.test.ts`.
  *
  * The feed waiting is done from Node rather than inside a closure, for the reason
- * `update-check.cross-platform.integration.test.ts` records at length (`T796-P41`): one closure is capped
+ * `update-check.cross-platform.integration.test.ts` records at length: one closure is capped
  * at ~30s by the transport, which is less than a real check costs on an emulator.
  */
 

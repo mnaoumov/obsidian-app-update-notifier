@@ -57,7 +57,7 @@ const DESKTOP: PlatformSnapshot = {
 
 /**
  * What the Electron half looks like TODAY: the running version is known, the target is not, because
- * the metadata feed's `runtimeVersions` is absent for every current Obsidian (`T717-P2`). The span
+ * the metadata feed's `runtimeVersions` is absent for every current Obsidian. The span
  * tests below override `targetVersion` to exercise the branch that is dark in production.
  */
 const ELECTRON: ElectronStatus = {
@@ -228,7 +228,7 @@ describe('the Electron row', () => {
   });
 
   it('should say nothing about the newest installer while the metadata feed does not record its Electron', async () => {
-    // The production state today: `runtimeVersions` is absent for every 1.13.x (`T717-P2`), so the
+    // The production state today: `runtimeVersions` is absent for every 1.13.x, so the
     // Span must stay dark rather than render "unknown".
     const contentEl = await render(createResult([createStatus(ReleaseStreamId.App, false)]));
 

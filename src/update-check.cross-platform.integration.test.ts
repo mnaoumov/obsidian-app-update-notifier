@@ -22,7 +22,7 @@ import {
  * weeks, and a test that pinned them would fail for the wrong reason; what matters is that the plugin
  * reaches a real answer at all, and that the answer is one of the two it is allowed to give.
  *
- * THE WAITING HAPPENS IN NODE, not inside Obsidian (`T796-P41`). A single `evalInObsidian` closure is
+ * THE WAITING HAPPENS IN NODE, not inside Obsidian. A single `evalInObsidian` closure is
  * capped at ~30s by the transport — Appium surfaces it as a bare `script timeout`, CDP as a command
  * timeout — so a closure that waits on a feed is a closure that dies on any machine where the feed is
  * slower than that. Waiting on the emulator's user-mode NAT is exactly that machine. Each closure below is
