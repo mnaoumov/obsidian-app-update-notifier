@@ -38,7 +38,7 @@ export interface ShowUpdateDetailsParams extends ModalParamsBase {
 type UpdateDetailsModalConstructorParams = ModalBaseConstructorParams<void> & ShowUpdateDetailsParams;
 
 /**
- * G92: `obsidianmd/ui/sentence-case` cannot tell a command name or a mid-sentence link label from a
+ * `obsidianmd/ui/sentence-case` cannot tell a command name or a mid-sentence link label from a
  * sentence that should have been capitalized, and disabling an `obsidianmd` rule is forbidden. An empty
  * interpolation makes the rule skip the string while the rendered text stays byte-identical.
  */

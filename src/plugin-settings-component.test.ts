@@ -123,7 +123,7 @@ function createComponent(): PluginSettingsComponent {
 
 /**
  * The real {@link DataHandler} contract is two methods over one blob, so an in-memory pair exercises the
- * genuine load/save path rather than standing in for it (G49).
+ * genuine load/save path rather than standing in for it.
  *
  * @returns The data handler.
  */

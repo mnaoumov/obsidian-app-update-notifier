@@ -66,7 +66,7 @@ const SETTINGS_GENERAL_PATH = 'Settings → General';
 const UPDATE_CHECK_PATH = `${SETTINGS_GENERAL_PATH} → Check for updates`;
 
 /**
- * G92: `obsidianmd/ui/sentence-case` cannot tell a UI path or a link label from a sentence that should
+ * `obsidianmd/ui/sentence-case` cannot tell a UI path or a link label from a sentence that should
  * have been capitalized, and disabling an `obsidianmd` rule is forbidden. An empty interpolation makes
  * the rule skip the string while the rendered text stays byte-identical.
  */
