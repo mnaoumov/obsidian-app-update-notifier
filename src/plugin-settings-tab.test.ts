@@ -195,7 +195,7 @@ function headings(tab: PluginSettingsTab): string[] {
 /**
  * Renders the declared rows the way Obsidian does when the tab is opened.
  *
- * No row declares a `visible` or `disabled` predicate, so the predicate-evaluating half of G101's
+ * No row declares a `visible` or `disabled` predicate, so the predicate-evaluating half of the
  * reference renderer is deliberately absent — it would be a branch no test can take, against a 100%
  * coverage gate. Add it back the moment a row grows a predicate.
  *

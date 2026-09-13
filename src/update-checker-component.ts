@@ -226,7 +226,7 @@ export class UpdateCheckerComponent extends ComponentEx {
  * Builds a notice that can be acted on without leaving Obsidian: what happened, where to read about it,
  * and the routes to take it.
  *
- * The links inside need no dismissal guard. G54 records that a `Notice`'s dismiss is a bubble-phase
+ * The links inside need no dismissal guard. A `Notice`'s dismiss is a bubble-phase
  * handler a child click reaches, so an interactive child needs `stopPropagation()` — but that is for
  * BUTTONS, which must leave the notice standing. These are links: following one navigates away, and the
  * notice closing behind it is the correct outcome. The "update app only" route is deliberately a path
