@@ -124,7 +124,7 @@ export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
             name: 'Obsidian\'s own automatic updates',
             render: () => {
               // Read-only. This plugin reports Obsidian's setting; it never writes it, because the whole
-              // Point is to leave that choice alone and keep you informed either way.
+              // point is to leave that choice alone and keep you informed either way.
             }
           })
         ]

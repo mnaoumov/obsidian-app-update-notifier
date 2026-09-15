@@ -105,7 +105,7 @@ describe('A real check against the real feeds', () => {
         const appStreamEl = streamEls.find((el) => el.querySelector('h3')?.textContent === 'App');
 
         // The versions are separated by <br>, which contributes no newline to `textContent`, so the
-        // Whole block is matched rather than split into lines.
+        // whole block is matched rather than split into lines.
         const latestMatch = /Latest:\s*(?<version>[\d.]+)/.exec(appStreamEl?.textContent ?? '');
 
         return {
@@ -141,7 +141,7 @@ describe('A real check against the real feeds', () => {
     expect(check.isPluginLoaded).toBe(true);
 
     // One of the two answers a successful check is allowed to give — never "not checked", which is what
-    // The item says when nothing has succeeded.
+    // the item says when nothing has succeeded.
     expect(check.statusBarText).toMatch(/^Obsidian: (?:up to date|\d+ updates?)$/);
 
     const observations = panel.observations;

@@ -123,7 +123,7 @@ describe('the status bar item', () => {
 
   it('should do nothing when refreshed before it is loaded', () => {
     // `refresh` is public and wired to the settings-save event, which can fire at any point in the
-    // Plugin's lifecycle — including before this component has been given its element.
+    // plugin's lifecycle — including before this component has been given its element.
     expect(() => {
       createComponent().refresh();
     }).not.toThrow();

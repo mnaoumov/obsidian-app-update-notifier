@@ -78,7 +78,7 @@ describe('findLatestDesktopInstallerVersion', () => {
 
   it('should not count the app payload as an installer', () => {
     // `obsidian-<version>.asar.gz` is what auto-update downloads. It ends in `.gz`, so a looser test
-    // Would report an installer for a release that shipped none.
+    // would report an installer for a release that shipped none.
     const releases = [createRelease('v1.13.9', ['obsidian-1.13.9.asar.gz'])];
     expect(findLatestDesktopInstallerVersion(releases)).toBeNull();
   });

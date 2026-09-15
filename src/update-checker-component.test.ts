@@ -98,7 +98,7 @@ beforeEach(() => {
   vi.mocked(checkIsInsiderBuild).mockReturnValue(false);
 
   // The real feed records nothing for any current version, so an empty index is the
-  // Production default rather than a degenerate fixture. Individual tests populate it.
+  // production default rather than a degenerate fixture. Individual tests populate it.
   vi.mocked(fetchObsidianMetadata).mockResolvedValue({});
 
   vi.mocked(fetchChangelogEntries).mockResolvedValue([

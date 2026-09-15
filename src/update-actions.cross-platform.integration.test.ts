@@ -165,7 +165,7 @@ describe('The routes offered for a real update', () => {
 
       expect(stream.actionLinkTexts).toContain('Update with new installer (recommended)');
       // A path rather than a button: the app's own Check for updates is wired to a module-private
-      // Updater, reachable only by matching localized button text in the DOM.
+      // updater, reachable only by matching localized button text in the DOM.
       expect(stream.actionsText).toContain('Settings → General → Check for updates');
     }
 

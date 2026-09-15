@@ -64,7 +64,7 @@ export class StatusBarComponent extends ComponentEx {
     const result = this.updateCheckerComponent.lastResult;
     const shouldShow = this.pluginSettingsComponent.settings.shouldShowStatusBarItem
       // A platform with no watchable stream (iOS) gets no item at all, rather than one that can only
-      // Ever say "unknown".
+      // ever say "unknown".
       && (result === null || result.statuses.length > 0);
 
     statusBarItemEl.toggleClass('app-update-notifier-hidden', !shouldShow);

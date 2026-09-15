@@ -77,8 +77,8 @@ beforeEach(() => {
   app = App.createConfigured__().asOriginalType__();
   openedModal = null;
   // Deliberately does NOT close the modal. The Electron span is filled in after an `await`, and a
-  // Harness that closed immediately would exercise only the already-closed path — which is the one
-  // Branch that must NOT render. Closing is driven explicitly by the tests that mean to.
+  // harness that closed immediately would exercise only the already-closed path — which is the one
+  // branch that must NOT render. Closing is driven explicitly by the tests that mean to.
   vi.mocked(showModal).mockImplementation((modalCreator) => {
     const modal = modalCreator(promiseResolve) as ModalBase<void>;
     openedModal = modal;
@@ -153,8 +153,8 @@ describe('when there are streams to show', () => {
 
   it('should offer both install routes for an update on any stream', async () => {
     // Superseded the old "download only for an installer update" rule. Replacing the installer is now
-    // Offered for an APP update too, because it is the route that also moves Electron — and the app-only
-    // Route is named beside it, so the choice is the reader's rather than the plugin's.
+    // offered for an APP update too, because it is the route that also moves Electron — and the app-only
+    // route is named beside it, so the choice is the reader's rather than the plugin's.
     for (const streamId of [ReleaseStreamId.App, ReleaseStreamId.Installer]) {
       const contentEl = await render(createResult([createStatus(streamId, true)]));
       expect([...contentEl.querySelectorAll('a')].map((link) => link.textContent)).toContain('Update with new installer (recommended)');
@@ -229,7 +229,7 @@ describe('the Electron row', () => {
 
   it('should say nothing about the newest installer while the metadata feed does not record its Electron', async () => {
     // The production state today: `runtimeVersions` is absent for every 1.13.x, so the
-    // Span must stay dark rather than render "unknown".
+    // span must stay dark rather than render "unknown".
     const contentEl = await render(createResult([createStatus(ReleaseStreamId.App, false)]));
 
     expect(contentEl.textContent).not.toContain('latest installer has Electron version');
@@ -250,8 +250,8 @@ describe('the Electron row', () => {
 
   it('should render no list when the index names nothing in between', async () => {
     // Can happen the moment a new Electron ships: the metadata feed names the target before Electron's
-    // Own index has been re-read, so the span resolves empty. An empty disclosure triangle would be
-    // Worse than none.
+    // own index has been re-read, so the span resolves empty. An empty disclosure triangle would be
+    // worse than none.
     mockedFetchElectronStableVersions.mockResolvedValue(['34.5.8']);
 
     const contentEl = await render(createResult([createStatus(ReleaseStreamId.App, false)], { ...ELECTRON, targetVersion: '36.0.0' }));

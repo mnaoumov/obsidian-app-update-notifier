@@ -119,7 +119,7 @@ export function getElectronVersion(): null | string {
   }
 
   // Bracketed because `process.versions` is an index signature, and `electron` is only present in it
-  // When Obsidian is the Electron desktop app.
+  // when Obsidian is the Electron desktop app.
   return process.versions['electron'] ?? null;
 }
 
