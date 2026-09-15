@@ -79,7 +79,7 @@ describe('The installer stream on desktop', () => {
         const installerEl = streamEls.find((el) => el.querySelector('h3')?.textContent === 'Installer');
 
         // The versions are separated by <br>, which contributes no newline to `textContent`, so each
-        // Label is matched within the whole block rather than found as its own line.
+        // label is matched within the whole block rather than found as its own line.
         function readVersion(label: string): string {
           const pattern = new RegExp(`${label}:${String.raw`\s*(?<version>[\d.]+)`}`);
           return pattern.exec(installerEl?.textContent ?? '')?.groups?.['version'] ?? '';
@@ -122,7 +122,7 @@ describe('The installer stream on desktop', () => {
     expect(observations?.streamHeadings).toContain('Installer');
 
     // Both sides of the comparison resolved: `Platform.build` on one, the newest release carrying a
-    // Desktop installer asset on the other.
+    // desktop installer asset on the other.
     expect(observations?.installedVersion).toMatch(/^\d+\.\d+\.\d+$/);
     expect(observations?.latestVersion).toMatch(/^\d+\.\d+\.\d+$/);
 

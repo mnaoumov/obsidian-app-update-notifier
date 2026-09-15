@@ -139,7 +139,7 @@ describe('desktop store screenshots', () => {
  */
 async function openDetailsPanel(): Promise<DetailsProbe> {
   // Let the previous shot's capture settle: the device-metrics override it sets and clears disturbs
-  // Anything opened too soon afterwards.
+  // anything opened too soon afterwards.
   await evalInObsidian({
     async callback({ app }): Promise<void> {
       const RESIZE_SETTLE_DELAY_IN_MILLISECONDS = 2000;

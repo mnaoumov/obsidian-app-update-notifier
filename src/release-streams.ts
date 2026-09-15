@@ -298,8 +298,8 @@ export function resolveInstallerStreamStatus(feeds: ReleaseFeeds, platform: Plat
 
   return {
     // The release this version came from was selected BY its desktop assets, so its body is the
-    // Desktop changelog rather than a mobile one — which is why the release body is trusted here and
-    // Not on the app stream.
+    // desktop changelog rather than a mobile one — which is why the release body is trusted here and
+    // not on the app stream.
     changelogUrl: latestVersion === null
       ? CHANGELOG_INDEX_URL
       : getMetadataChangelogUrl(feeds.metadata, latestVersion, ChangelogPlatform.Desktop, false)

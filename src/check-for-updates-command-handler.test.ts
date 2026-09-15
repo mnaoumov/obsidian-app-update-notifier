@@ -41,7 +41,7 @@ describe('CheckForUpdatesCommandHandler', () => {
 
   it('should report a failure, unlike the scheduled check', async () => {
     // Someone who has just asked deserves an answer either way; a silent no-op would read as "nothing
-    // New", which is a different and possibly wrong answer.
+    // new", which is a different and possibly wrong answer.
     await createHandler().execute();
 
     expect(check).toHaveBeenCalledWith(true);

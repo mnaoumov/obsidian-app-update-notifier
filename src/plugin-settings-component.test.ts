@@ -57,7 +57,7 @@ describe('checkShouldWatchBetaStream', () => {
     [null, false]
   ])('should follow the insider setting (%s) in Auto mode', async (isInsiderBuild: boolean | null, shouldWatch: boolean) => {
     // A `null` reading means mobile, where the setting does not exist. Someone who cannot be on Catalyst
-    // Should not be told a Catalyst build exists.
+    // should not be told a Catalyst build exists.
     mockedCheckIsInsiderBuild.mockReturnValue(isInsiderBuild);
     const component = await createLoadedComponent();
 

@@ -88,7 +88,7 @@ describe('resolveElectronSpan', () => {
     it('should never claim to have listed what it dropped', () => {
       const span = resolveElectronSpan('30.0.0', '39.0.19', LONG_SPAN_VERSIONS);
       // 30.0.1 through 39.0.19 — the whole fixture minus the installed version and the 40.x major,
-      // Which sits past the target.
+      // which sits past the target.
       expect(span.listedVersions.length + span.omittedCount).toBe(199);
     });
   });

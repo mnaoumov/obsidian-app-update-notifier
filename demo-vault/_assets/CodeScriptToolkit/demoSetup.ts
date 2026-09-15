@@ -117,6 +117,6 @@ function describeAutoUpdate(): string {
   }
 
   // `disable-update` is read-only in this form. Never pass a second argument here — with one, the same
-  // Channel WRITES the setting.
+  // channel WRITES the setting.
   return window.electron.ipcRenderer.sendSync('disable-update') ? 'off' : 'on';
 }

@@ -150,7 +150,7 @@ describe('checkIsAutoUpdateDisabled', () => {
 describe('checkIsInsiderBuild', () => {
   it('should read the insider setting with a null argument, which is the only form that does not WRITE it', () => {
     // A boolean argument switches the user's release channel (`app.js:202189`). This assertion is the
-    // Guard against that call ever being "simplified" into a write.
+    // guard against that call ever being "simplified" into a write.
     sendSync.mockReturnValue(false);
     expect(checkIsInsiderBuild()).toBe(false);
     expect(sendSync).toHaveBeenCalledWith('insider-build', null);

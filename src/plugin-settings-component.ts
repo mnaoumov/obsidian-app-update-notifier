@@ -76,7 +76,7 @@ export class PluginSettingsComponent extends PluginSettingsComponentBase<PluginS
     super.registerValidators();
 
     // An empty message means valid; 0 is the documented "never check on a schedule" value, so it is
-    // Accepted alongside the real interval range rather than clamped into it.
+    // accepted alongside the real interval range rather than clamped into it.
     this.registerValidator('checkIntervalInMinutes', (value) => {
       const isValid = value === 0 || (Number.isSafeInteger(value) && value >= MIN_CHECK_INTERVAL_IN_MINUTES);
       return isValid ? '' : `Should be 0, or a whole number of minutes not below ${String(MIN_CHECK_INTERVAL_IN_MINUTES)}.`;

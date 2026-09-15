@@ -92,8 +92,8 @@ describe('resolveAppStreamStatus', () => {
 
   it('should never surface minimumVersion', () => {
     // `minimumVersion` is the floor auto-update will upgrade FROM. Presenting it as a version to be on
-    // Would tell a 1.13.6 user they are ahead of where they need to be, which is the opposite of the
-    // Point.
+    // would tell a 1.13.6 user they are ahead of where they need to be, which is the opposite of the
+    // point.
     const status = resolveAppStreamStatus(FEEDS, DESKTOP);
     expect(status.latestVersion).not.toBe(FEEDS.desktopReleases.minimumVersion);
     expect(status.latestVersion).toBe(FEEDS.desktopReleases.latestVersion);

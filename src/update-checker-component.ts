@@ -189,7 +189,7 @@ export class UpdateCheckerComponent extends ComponentEx {
 
   private resolveStatuses(feeds: ReleaseFeeds, platform: PlatformSnapshot): ReleaseStreamStatus[] {
     // Obsidian publishes no release feed of any kind for iOS, so there is nothing truthful to say
-    // There — better than reporting the Android version to an iPhone.
+    // there — better than reporting the Android version to an iPhone.
     if (!platform.isDesktopApp && !platform.isAndroidApp) {
       return [];
     }

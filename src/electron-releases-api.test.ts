@@ -40,7 +40,7 @@ describe('fetchElectronStableVersions', () => {
 
   it('should drop pre-releases, which no Obsidian installer ever bundles', async () => {
     // The real index is mostly these — 2215 of its 3375 entries on 2026-08-30 — so listing them as
-    // Versions someone "passed through" would be wrong as well as unreadable.
+    // versions someone "passed through" would be wrong as well as unreadable.
     mockRequestUrl([
       { version: '46.0.0-nightly.20260828' },
       { version: '45.0.0-alpha.1' },
