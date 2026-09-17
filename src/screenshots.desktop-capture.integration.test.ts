@@ -76,7 +76,7 @@ interface SettingsProbe {
  * is.
  */
 interface VaultWithPopoutConfig {
-  setConfig(key: 'settingsPopoutWindow', shouldUsePopout: boolean): void;
+  setConfig: (key: 'settingsPopoutWindow', shouldUsePopout: boolean) => void;
 }
 
 const WIDTH_IN_PIXELS = 1200;

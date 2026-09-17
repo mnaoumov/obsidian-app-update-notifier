@@ -321,8 +321,8 @@ describe('closing', () => {
 
 interface Deferred<T> {
   promise: Promise<T>;
-  reject(error: Error): void;
-  resolve(value: T): void;
+  reject: (error: Error) => void;
+  resolve: (value: T) => void;
 }
 
 function closeOpenedModal(): void {
