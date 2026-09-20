@@ -26,7 +26,10 @@ export interface AppendUpdateActionsOptions {
    * Whether this is the Electron desktop app.
    *
    * The two install routes are a desktop shape — there is no installer on Android, and no
-   * {@link UPDATE_CHECK_PATH} either — so the routes are written per platform rather than once.
+   * {@link UPDATE_CHECK_PATH} either — so the routes are written per platform rather than once. The
+   * Catalyst gate reads it for the same reason and not as a second thought: its own
+   * {@link SETTINGS_GENERAL_PATH} is the same desktop tab, and mobile reaches the insider channel by a
+   * route that is not in the app at all.
    */
   readonly isDesktopApp: boolean;
 
@@ -65,6 +68,10 @@ export const EARLY_ACCESS_URL = 'https://obsidian.md/help/early-access';
  * — NOT `:219139`, which is Community plugins) is wired to a module-private updater, so a plugin could
  * only press it by matching LOCALIZED button text in the DOM. Telling someone where it is works in
  * every language and cannot break.
+ *
+ * ⚠️ DESKTOP-ONLY, in both of its users. Mobile has no such tab — see `appendCatalystGate` and
+ * `appendInstallRoutes` — so nothing this string appears in may be rendered where `isDesktopApp` is
+ * false. Both call sites were fixed on 2026-09-20; a third must decide the same thing.
  */
 const SETTINGS_GENERAL_PATH = 'Settings → General';
 
@@ -90,7 +97,7 @@ export function appendUpdateActions(parent: UpdateActionsParent, options: Append
   const container = parent.createDiv({ cls: 'app-update-notifier-actions' });
 
   if (options.streamId === ReleaseStreamId.Beta && options.isInsiderBuild !== true) {
-    appendCatalystGate(container);
+    appendCatalystGate(container, options.isDesktopApp);
     return;
   }
 
@@ -104,12 +111,28 @@ export function appendUpdateActions(parent: UpdateActionsParent, options: Append
  * ⚠️ The wording must stay true for BOTH people it reaches: someone with no license, and someone who
  * holds one with the toggle switched off. The plugin cannot tell them apart — the license lives on a
  * module-private singleton with no supported read — so it says what is needed, never what the reader
- * lacks.
+ * lacks. On mobile there is a THIRD reader — someone already running an insider build — because
+ * `checkIsInsiderBuild` answers `null` there, which is why the mobile sentence describes the channel
+ * rather than telling anyone to go and get on it.
+ *
+ * ⚠️ {@link SETTINGS_GENERAL_PATH} is DESKTOP-ONLY, and not merely in wording. Verified 2026-09-20
+ * against Obsidian's own {@link EARLY_ACCESS_URL} page: on desktop you sign in under
+ * `Settings → General → Account` and switch on early access under `Settings → General → App`, but
+ * mobile has no such tab and no toggle at all. Its route is the Catalyst license, the Discord badge it
+ * grants, and the insider channels' `#insider-welcome`, which carries "instructions for accessing your
+ * download based on your device type" — a TestFlight link on iOS, an APK on Android, both posted in the
+ * channel. The two mobile platforms therefore differ in the ARTIFACT, not in the route, so one sentence
+ * covers both and nothing here has to tell iOS from Android. The link below is where those steps are
+ * written down; it is the instructions, never the download.
  *
  * @param parent - What to render into.
+ * @param isDesktopApp - Whether this is the Electron desktop app.
  */
-function appendCatalystGate(parent: UpdateActionsParent): void {
-  parent.appendText(`${EMPTY}Installing this build needs a Catalyst license, with insider builds switched on in ${SETTINGS_GENERAL_PATH}.`);
+function appendCatalystGate(parent: UpdateActionsParent, isDesktopApp: boolean): void {
+  const route = isDesktopApp
+    ? `with insider builds switched on in ${SETTINGS_GENERAL_PATH}`
+    : 'and the mobile download is reached through Obsidian\'s insider Discord channels rather than the app store';
+  parent.appendText(`${EMPTY}Installing this build needs a Catalyst license, ${route}.`);
   parent.createEl('br');
   parent.createEl('a', {
     href: EARLY_ACCESS_URL,
