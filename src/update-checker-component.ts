@@ -182,7 +182,7 @@ export class UpdateCheckerComponent extends ComponentEx {
         continue;
       }
 
-      this.pluginNoticeComponent.showNotice(createUpdateNoticeFragment(status, status.latestVersion, electron, platform.isInsiderBuild));
+      this.pluginNoticeComponent.showNotice(createUpdateNoticeFragment(status, status.latestVersion, electron, platform));
       await this.pluginSettingsComponent.recordNotified(status.id, status.latestVersion);
     }
   }
@@ -235,14 +235,16 @@ export class UpdateCheckerComponent extends ComponentEx {
  * @param status - The stream status being announced.
  * @param version - The version being announced.
  * @param electron - What the check established about Electron.
- * @param isInsiderBuild - Whether Obsidian's insider toggle is on, or `null` on mobile.
+ * @param platform - The platform the check was resolved against. Passed whole rather than as the one
+ * field it used to need: the routes are platform-shaped as well as the Catalyst gate is, so both reads
+ * come from the same snapshot the statuses were resolved from.
  * @returns The notice fragment.
  */
 function createUpdateNoticeFragment(
   status: ReleaseStreamStatus,
   version: string,
   electron: ElectronStatus,
-  isInsiderBuild: boolean | null
+  platform: PlatformSnapshot
 ): DocumentFragment {
   return createFragment((f) => {
     f.appendText(createUpdateNoticeText(status, version));
@@ -253,7 +255,8 @@ function createUpdateNoticeFragment(
     });
     appendUpdateActions(f, {
       electron,
-      isInsiderBuild,
+      isDesktopApp: platform.isDesktopApp,
+      isInsiderBuild: platform.isInsiderBuild,
       streamId: status.id
     });
   });

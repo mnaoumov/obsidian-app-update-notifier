@@ -187,6 +187,7 @@ class UpdateDetailsModal extends ModalBase<void> {
     // `Download` link would now be the same link twice in one section.
     appendUpdateActions(container, {
       electron: result.electron,
+      isDesktopApp: result.platform.isDesktopApp,
       isInsiderBuild: result.platform.isInsiderBuild,
       streamId: status.id
     });

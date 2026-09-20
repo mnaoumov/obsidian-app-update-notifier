@@ -13,9 +13,11 @@ import {
  * check runs, the details panel opens, and every row that reports an update carries the two ways to take
  * it — replace the installer, or let Obsidian replace the app bundle alone.
  *
- * Cross-platform because both routes apply on both: the download page is platform-aware (`?os=` /
- * `?arch=`) rather than desktop-only, and Android reaches Obsidian's update check through the same
- * settings path.
+ * Cross-platform because the routes DIFFER by platform and each half has to be driven where it renders.
+ * Desktop offers two — replace the installer, or let Obsidian replace the app bundle alone. Mobile
+ * offers one `Update Obsidian` link, because neither desktop sentence is true on a phone: there is no
+ * installer on Android, and `Settings → General → Check for updates` is the desktop About tab. Both were
+ * rendered on mobile until 2026-09-20, and this suite asserted them there.
  *
  * WHAT IS AND IS NOT ASSERTED, and why. Whether this machine's Obsidian actually has an update waiting
  * depends on how the harness provisioned it, so — as in the sibling suites — no particular version is
@@ -160,6 +162,18 @@ describe('The routes offered for a real update', () => {
       if (stream.heading === 'Insider build') {
         expect(stream.actionsText).toContain('needs a Catalyst license');
         expect(stream.actionLinkTexts).toEqual(['Read about Catalyst and early access']);
+        continue;
+      }
+
+      if (!observations?.isDesktopApp) {
+        /*
+         * ONE route on mobile, and neither desktop sentence. Asserting the absences is the point: the
+         * defect this replaced was not a missing link but two present ones, offering a reader an
+         * installer Android does not have and a settings path it does not have either.
+         */
+        expect(stream.actionLinkTexts).toStrictEqual(['Update Obsidian']);
+        expect(stream.actionsText).not.toContain('installer');
+        expect(stream.actionsText).not.toContain('Settings → General');
         continue;
       }
 

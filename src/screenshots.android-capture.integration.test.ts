@@ -53,6 +53,7 @@ import {
 } from 'vitest';
 
 interface DetailsProbe {
+  readonly actionsText: string;
   readonly changelogLinkCount: number;
   readonly streamHeadings: string[];
 }
@@ -118,6 +119,17 @@ describe('mobile store screenshots', () => {
     // The installer is a desktop-only idea, so the mobile panel does not pretend to have one.
     expect(probe.streamHeadings).not.toContain('Installer');
     expect(probe.changelogLinkCount).toBeGreaterThanOrEqual(probe.streamHeadings.length);
+
+    /*
+     * And it does not pretend to have one in the ROUTES either. This frame is the committed store
+     * screenshot, and until 2026-09-20 it showed a mobile reader "Update with new installer
+     * (recommended)" and "Settings → General → Check for updates" — an installer Android does not have,
+     * and a desktop settings path it does not have. The headings were already asserted; the routes were
+     * not, so the defect shipped in a picture. `actionsText` is empty when nothing is out of date, which
+     * is why this asserts only the absences.
+     */
+    expect(probe.actionsText).not.toContain('installer');
+    expect(probe.actionsText).not.toContain('Settings → General → Check for updates');
     await shoot(2, 'The app stream, with a changelog link — no installer on mobile');
   });
 });
@@ -207,6 +219,9 @@ async function openDetailsPanel(): Promise<DetailsProbe> {
 
       const modalEl = document.querySelector(modalSelector);
       return {
+        actionsText: [...modalEl?.querySelectorAll('.app-update-notifier-actions') ?? []]
+          .map((el) => el.textContent)
+          .join('\n'),
         changelogLinkCount: [...modalEl?.querySelectorAll('a') ?? []]
           .filter((el) => (el.getAttribute('href') ?? '').startsWith('https://obsidian.md/changelog'))
           .length,

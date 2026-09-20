@@ -23,6 +23,14 @@ export interface AppendUpdateActionsOptions {
   readonly electron: ElectronStatus;
 
   /**
+   * Whether this is the Electron desktop app.
+   *
+   * The two install routes are a desktop shape — there is no installer on Android, and no
+   * {@link UPDATE_CHECK_PATH} either — so the routes are written per platform rather than once.
+   */
+  readonly isDesktopApp: boolean;
+
+  /**
    * Whether Obsidian's own insider toggle is on, or `null` on mobile. See `PlatformSnapshot` in
    * `release-streams.ts` for why this may only be read one-directionally.
    */
@@ -86,7 +94,7 @@ export function appendUpdateActions(parent: UpdateActionsParent, options: Append
     return;
   }
 
-  appendInstallRoutes(container);
+  appendInstallRoutes(container, options.isDesktopApp);
   appendElectronSentence(container, options.electron);
 }
 
@@ -131,12 +139,32 @@ function appendElectronSentence(parent: UpdateActionsParent, electron: ElectronS
 }
 
 /**
- * Appends the two ways to take an update: replace the installer, or let Obsidian replace the app bundle
- * alone.
+ * Appends the ways to take an update — TWO on desktop, ONE on mobile.
+ *
+ * ⚠️ Both desktop sentences are desktop-only IDEAS, not merely desktop-only wording. **There is no
+ * installer on Android** — which is why the mobile details panel omits the installer stream entirely —
+ * so offering to replace one is offering something that does not exist. And
+ * {@link UPDATE_CHECK_PATH} is not a path a mobile reader can walk: Obsidian's own check-for-updates
+ * button lives on the desktop About tab, and the Android app is updated by replacing the APK. Both were
+ * rendered on mobile until 2026-09-20, in a frame the store listing already showed.
+ *
+ * Mobile gets one route rather than none, because {@link appendUpdateActions} is only reached for a
+ * stream that HAS an update: a reader told one is available needs somewhere to go, and
+ * {@link getDownloadUrl} already answers `?os=android`. It deliberately does NOT name the Play Store —
+ * a sideloaded APK is this plugin's own audience, and the download page serves both readers.
  *
  * @param parent - What to render into.
+ * @param isDesktopApp - Whether this is the Electron desktop app.
  */
-function appendInstallRoutes(parent: UpdateActionsParent): void {
+function appendInstallRoutes(parent: UpdateActionsParent, isDesktopApp: boolean): void {
+  if (!isDesktopApp) {
+    parent.createEl('a', {
+      href: getDownloadUrl(),
+      text: 'Update Obsidian'
+    });
+    return;
+  }
+
   parent.createEl('a', {
     href: getDownloadUrl(),
     text: 'Update with new installer (recommended)'
