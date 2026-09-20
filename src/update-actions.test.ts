@@ -64,11 +64,37 @@ describe('the install routes', () => {
     const fragment = createFragment();
     appendUpdateActions(fragment, {
       electron: ELECTRON,
+      isDesktopApp: true,
       isInsiderBuild: false,
       streamId: ReleaseStreamId.App
     });
 
     expect(fragment.querySelector('a')?.textContent).toBe('Update with new installer (recommended)');
+  });
+});
+
+describe('the install routes on mobile', () => {
+  it('should offer ONE route, because neither desktop sentence is true on a phone', () => {
+    /*
+     * There is no installer on Android — the mobile details panel omits the installer stream for that
+     * reason — and `Settings → General → Check for updates` is the DESKTOP About tab, which mobile does
+     * not have. Both were rendered on mobile until 2026-09-20, in a frame the store listing showed.
+     */
+    renderMobile(ReleaseStreamId.App);
+
+    const links = [...containerEl.querySelectorAll('a')];
+    expect(links.map((link) => link.textContent)).toStrictEqual(['Update Obsidian']);
+    expect(links[0]?.getAttribute('href')).toBe(DOWNLOAD_URL);
+    expect(containerEl.textContent).not.toContain('installer');
+    expect(containerEl.textContent).not.toContain('Settings → General');
+  });
+
+  it('should still offer that route, rather than leaving an announced update with nowhere to go', () => {
+    // These actions are only ever rendered for a stream that HAS an update, so suppressing them on
+    // mobile would tell a reader an update exists and then offer nothing.
+    renderMobile(ReleaseStreamId.App);
+
+    expect(containerEl.querySelector('a')).not.toBeNull();
   });
 });
 
@@ -138,7 +164,25 @@ describe('the Electron sentence', () => {
 function render(streamId: ReleaseStreamId, electron: ElectronStatus = ELECTRON, isInsiderBuild: boolean | null = false): void {
   appendUpdateActions(containerEl, {
     electron,
+    isDesktopApp: true,
     isInsiderBuild,
+    streamId
+  });
+}
+
+/**
+ * Renders as mobile does: no desktop app, and therefore no readable insider toggle.
+ *
+ * @param streamId - Which stream's routes to render.
+ */
+function renderMobile(streamId: ReleaseStreamId): void {
+  appendUpdateActions(containerEl, {
+    electron: {
+      ...ELECTRON,
+      currentVersion: null
+    },
+    isDesktopApp: false,
+    isInsiderBuild: null,
     streamId
   });
 }
