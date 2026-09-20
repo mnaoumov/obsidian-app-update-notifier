@@ -112,9 +112,11 @@ function appendCatalystGate(parent: UpdateActionsParent): void {
 /**
  * Appends the one-line Electron summary, when — and only when — both ends of it are actually known.
  *
- * ⚠️ Renders NOTHING today. The target version comes from the metadata feed's `runtimeVersions`, which
- * is absent from every `1.13.x` entry. That is deliberate: a notice that guessed, or that
- * said "unknown", would be worse than one that stays quiet until the data exists.
+ * Rendered nothing until the metadata feed backfilled its `runtimeVersions`, and now renders whenever
+ * the installer is behind: measured 2026-09-03, `1.13.4` carries Electron `43.1.1` and `1.13.7`
+ * carries `43.3.0`. It still stays quiet where the feed is sparse — `1.14.0` has no entry — which is
+ * deliberate: a notice that guessed, or that said "unknown", would be worse than one that says nothing
+ * until the data exists.
  *
  * @param parent - What to render into.
  * @param electron - The Electron status.

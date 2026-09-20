@@ -135,9 +135,9 @@ class UpdateDetailsModal extends ModalBase<void> {
     paragraph.appendText(electron.currentVersion);
 
     /*
-     * Only when the newest installer would actually MOVE it. `targetVersion` is `null` for every
-     * current Obsidian today, because the metadata feed's `runtimeVersions` stopped being populated,
-     * so this whole branch is dark until that is backfilled.
+     * Only when the newest installer would actually MOVE it. The metadata feed has backfilled its
+     * `runtimeVersions`, so this branch is live wherever the installer is behind and the feed
+     * records both ends; it stays dark where the feed is still sparse, such as `1.14.0`.
      */
     if (electron.targetVersion !== null && electron.targetVersion !== electron.currentVersion) {
       paragraph.appendText(`, latest installer has Electron version ${electron.targetVersion}`);
