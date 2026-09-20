@@ -137,6 +137,41 @@ describe('the Catalyst gate', () => {
   });
 });
 
+describe('the Catalyst gate on mobile', () => {
+  it('should name the channel a phone can actually reach, not the desktop About tab', () => {
+    /*
+     * Verified 2026-09-20 against Obsidian's own early-access page: mobile has no insider toggle and no
+     * `Settings → General` tab to put one on. The route is the Catalyst license, the Discord badge it
+     * grants, and the insider channels — a TestFlight link on iOS, an APK on Android, both posted
+     * there. Until this was fixed the gate sent a mobile reader to a tab that does not exist.
+     */
+    renderMobile(ReleaseStreamId.Beta);
+
+    expect(containerEl.textContent).toContain('needs a Catalyst license');
+    expect(containerEl.textContent).toContain('insider Discord channels rather than the app store');
+    expect(containerEl.textContent).not.toContain('Settings → General');
+  });
+
+  it('should still link the page the steps are written on, which is the instructions and not the download', () => {
+    renderMobile(ReleaseStreamId.Beta);
+
+    const links = [...containerEl.querySelectorAll('a')];
+    expect(links.map((link) => link.textContent)).toStrictEqual(['Read about Catalyst and early access']);
+    expect(links[0]?.getAttribute('href')).toBe(EARLY_ACCESS_URL);
+  });
+
+  it('should never claim the reader has no license here either, the toggle being unreadable on mobile', () => {
+    // `checkIsInsiderBuild` answers `null` on mobile, so this gate is the ONLY branch the beta stream can
+    // take there — including for someone already running an insider build. It describes the channel
+    // rather than telling that reader to go and get on it.
+    renderMobile(ReleaseStreamId.Beta);
+
+    const text = containerEl.textContent;
+    expect(text).not.toContain('you do not have');
+    expect(text).not.toContain('You do not have');
+  });
+});
+
 describe('the Electron sentence', () => {
   it('should name both versions when both are known', () => {
     render(ReleaseStreamId.Installer, {

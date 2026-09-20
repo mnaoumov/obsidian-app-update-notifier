@@ -17,7 +17,9 @@ import {
  * Desktop offers two — replace the installer, or let Obsidian replace the app bundle alone. Mobile
  * offers one `Update Obsidian` link, because neither desktop sentence is true on a phone: there is no
  * installer on Android, and `Settings → General → Check for updates` is the desktop About tab. Both were
- * rendered on mobile until 2026-09-20, and this suite asserted them there.
+ * rendered on mobile until 2026-09-20, and this suite asserted them there. The Catalyst gate named the
+ * same desktop tab and was fixed the same day; its mobile wording is covered by the unit tests, because
+ * the beta stream is only watched on a phone when `betaStreamMode` is set to `always`.
  *
  * WHAT IS AND IS NOT ASSERTED, and why. Whether this machine's Obsidian actually has an update waiting
  * depends on how the harness provisioned it, so — as in the sibling suites — no particular version is
@@ -151,6 +153,17 @@ describe('The routes offered for a real update', () => {
 
       if (!stream.isUpdateAvailable) {
         continue;
+      }
+
+      /*
+       * NO row on mobile may name the desktop About tab. Asserted before the Insider-build branch
+       * below so it covers the Catalyst gate too, which carried its own `Settings → General` until
+       * 2026-09-20 — the same defect on the same platform as the install routes, one function along.
+       * It renders there only when `betaStreamMode` is `always`, which the harness does not set, so
+       * this is a guard against a future default rather than a test of today's mobile panel.
+       */
+      if (!observations?.isDesktopApp) {
+        expect(stream.actionsText).not.toContain('Settings → General');
       }
 
       /*
