@@ -245,6 +245,30 @@ export function resolveAppStreamStatus(feeds: ReleaseFeeds, platform: PlatformSn
  * The current version is the running app version, because a Catalyst build IS the app — the beta
  * channel publishes the same artifact ahead of the public one.
  *
+ * ⚠️ `beta.latestVersion` is a DESKTOP field and is read on EVERY platform, deliberately. This is the one
+ * stream that is not platform-aware — the app stream above reads the newest Android release instead, and
+ * the installer stream is `null` off the desktop — and the difference is not an oversight: Obsidian
+ * publishes ONE Catalyst version line across desktop and mobile, so the desktop feed's beta version is
+ * the mobile reader's version too.
+ *
+ * Established 2026-09-23 from Obsidian's own `changelog.json`. Across the 49 consecutive early-access
+ * versions from `1.8.8` (2025-02-25) to `1.14.2` (2026-09-15), every single one was published on desktop
+ * AND mobile under the SAME version number on the SAME day — no version carried by one platform and not
+ * the other, and no date gap in either direction. The mobile pages say it in words too: "Includes all new
+ * features and bug fixes up to Obsidian Desktop" followed by that same version, on 41 of the 94 mobile
+ * early-access entries, with the remainder naming no desktop version rather than a different one.
+ *
+ * Dated and bounded rather than asserted as timeless, because the two lines genuinely WERE separate
+ * before that: mobile `1.0.2` shipped 2021-07-11 and desktop `1.0.2` on 2022-10-20 — two unrelated
+ * releases colliding on a number — and the last one-sided early-access version is `1.8.7`, mobile-only on
+ * 2025-02-14. What would reopen this is a mobile early-access release under a number the desktop beta
+ * feed never carried; that, and nothing weaker, is what would make this stream platform-aware.
+ *
+ * ⚠️ The metadata feed's `desktopCatalyst` and `mobileCatalyst` are NOT evidence against the above, and
+ * were the reason to go and check. They are two changelog PAGES for one version rather than two version
+ * numbers — both hang off the same key of `metadata.json`, which is keyed by the bare version. The
+ * changelog URL is therefore the only thing on this stream that reads the platform at all.
+ *
  * @param feeds - The fetched feeds.
  * @param platform - The platform snapshot.
  * @returns The stream status.
