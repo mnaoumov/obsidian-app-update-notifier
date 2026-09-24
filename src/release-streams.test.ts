@@ -130,6 +130,18 @@ describe('resolveBetaStreamStatus', () => {
     expect(status.changelogUrl).toBe(CHANGELOG_INDEX_URL);
   });
 
+  it('should compare against the desktop feed on mobile too, because the Catalyst version line is shared', () => {
+    // The ONE stream that is deliberately not platform-aware. Established 2026-09-23 from Obsidian's own
+    // `changelog.json`: the 49 consecutive early-access versions from 1.8.8 (2025-02-25) to 1.14.2
+    // (2026-09-15) were each published on desktop AND mobile under the same number on the same day, so
+    // `beta.latestVersion` — a desktop field — is the mobile reader's version too. This case exists to
+    // fail anyone who "fixes" the asymmetry with the app stream by nulling this out off the desktop; see
+    // the resolver's own comment for what evidence would justify that.
+    const status = resolveBetaStreamStatus(FEEDS, { ...ANDROID, appVersion: '1.13.6' });
+    expect(status.latestVersion).toBe('1.13.7');
+    expect(status.isUpdateAvailable).toBe(true);
+  });
+
   it('should degrade to the changelog index when the feed carries no beta channel', () => {
     const feeds: ReleaseFeeds = { ...FEEDS, desktopReleases: { latestVersion: '1.13.7', minimumVersion: '1.1.9' } };
     const status = resolveBetaStreamStatus(feeds, DESKTOP);
