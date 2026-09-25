@@ -337,11 +337,7 @@ export function resolveInstallerStreamStatus(feeds: ReleaseFeeds, platform: Plat
 }
 
 function checkIsOlder(version: null | string, otherVersion: null | string): boolean {
-  if (version === null || otherVersion === null || !valid(version) || !valid(otherVersion)) {
-    return false;
-  }
-
-  return lt(version, otherVersion);
+  return version !== null && otherVersion !== null && !!valid(version) && !!valid(otherVersion) && lt(version, otherVersion);
 }
 
 function resolveChangelogUrl(
@@ -350,10 +346,8 @@ function resolveChangelogUrl(
   platform: ChangelogPlatform,
   shouldPreferEarlyAccess: boolean
 ): string {
-  if (version === null) {
-    return CHANGELOG_INDEX_URL;
-  }
-
-  return getMetadataChangelogUrl(feeds.metadata, version, platform, shouldPreferEarlyAccess)
-    ?? findChangelogUrl(feeds.changelogEntries, version, platform, shouldPreferEarlyAccess);
+  return version === null
+    ? CHANGELOG_INDEX_URL
+    : getMetadataChangelogUrl(feeds.metadata, version, platform, shouldPreferEarlyAccess)
+      ?? findChangelogUrl(feeds.changelogEntries, version, platform, shouldPreferEarlyAccess);
 }

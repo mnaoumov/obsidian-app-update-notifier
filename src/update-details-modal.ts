@@ -220,11 +220,7 @@ function describeStatus(status: ReleaseStreamStatus): string {
     return 'An update is available.';
   }
 
-  if (status.currentVersion === null || status.latestVersion === null) {
-    return 'Could not be compared.';
-  }
-
-  return 'Up to date.';
+  return status.currentVersion === null || status.latestVersion === null ? 'Could not be compared.' : 'Up to date.';
 }
 
 /**

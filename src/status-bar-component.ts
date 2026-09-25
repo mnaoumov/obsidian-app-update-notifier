@@ -96,9 +96,5 @@ function buildTooltip(hasNoResult: boolean, updateCount: number): string {
     return 'No update check has succeeded yet. Click for details.';
   }
 
-  if (updateCount === 0) {
-    return 'Every watched Obsidian release stream is up to date. Click for details.';
-  }
-
-  return 'Click for the versions and their changelogs.';
+  return updateCount === 0 ? 'Every watched Obsidian release stream is up to date. Click for details.' : 'Click for the versions and their changelogs.';
 }

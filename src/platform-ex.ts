@@ -56,11 +56,7 @@ const OS_BY_NODE_PLATFORM: Readonly<Record<string, string>> = {
  */
 export function checkIsAutoUpdateDisabled(): boolean | null {
   const ipcRenderer = getIpcRenderer();
-  if (!ipcRenderer) {
-    return null;
-  }
-
-  return ipcRenderer.sendSync('disable-update') as boolean;
+  return ipcRenderer ? (ipcRenderer.sendSync('disable-update') as boolean) : null;
 }
 
 /**
@@ -74,11 +70,7 @@ export function checkIsAutoUpdateDisabled(): boolean | null {
  */
 export function checkIsInsiderBuild(): boolean | null {
   const ipcRenderer = getIpcRenderer();
-  if (!ipcRenderer) {
-    return null;
-  }
-
-  return ipcRenderer.sendSync('insider-build', null) as boolean;
+  return ipcRenderer ? (ipcRenderer.sendSync('insider-build', null) as boolean) : null;
 }
 
 /**
@@ -132,17 +124,9 @@ export function getElectronVersion(): null | string {
  * @returns The installer version, or `null` on mobile, where the distinction does not exist.
  */
 export function getInstallerVersion(): null | string {
-  if (!Platform.isDesktopApp) {
-    return null;
-  }
-
-  return platformWithVersions.build || null;
+  return Platform.isDesktopApp ? platformWithVersions.build || null : null;
 }
 
 function getIpcRenderer(): null | typeof window.electron.ipcRenderer {
-  if (!Platform.isDesktopApp) {
-    return null;
-  }
-
-  return window.electron.ipcRenderer;
+  return Platform.isDesktopApp ? window.electron.ipcRenderer : null;
 }
