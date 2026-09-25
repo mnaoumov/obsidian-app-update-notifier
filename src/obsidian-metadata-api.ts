@@ -160,11 +160,7 @@ export function getMetadataChangelogUrl(
  * @returns The bundled Electron version, or `null` when it is not recorded.
  */
 export function getMetadataElectronVersion(metadata: null | ObsidianMetadata, version: null | string): null | string {
-  if (version === null) {
-    return null;
-  }
-
-  return metadata?.[version]?.runtimeVersions?.electron ?? null;
+  return version === null ? null : metadata?.[version]?.runtimeVersions?.electron ?? null;
 }
 
 /**
@@ -175,9 +171,5 @@ export function getMetadataElectronVersion(metadata: null | ObsidianMetadata, ve
  * @returns The recorded floor, or `null` when this version does not record one.
  */
 export function getMetadataMinRecommendedElectronVersion(metadata: null | ObsidianMetadata, version: null | string): null | string {
-  if (version === null) {
-    return null;
-  }
-
-  return metadata?.[version]?.minRecommendedElectronVersion ?? null;
+  return version === null ? null : metadata?.[version]?.minRecommendedElectronVersion ?? null;
 }

@@ -174,11 +174,7 @@ export class UpdateCheckerComponent extends ComponentEx {
 
   private async notifyNewVersions(statuses: readonly ReleaseStreamStatus[], electron: ElectronStatus, platform: PlatformSnapshot): Promise<void> {
     for (const status of statuses) {
-      if (!status.isUpdateAvailable || status.latestVersion === null) {
-        continue;
-      }
-
-      if (this.pluginSettingsComponent.checkWasNotified(status.id, status.latestVersion)) {
+      if (!status.isUpdateAvailable || status.latestVersion === null || this.pluginSettingsComponent.checkWasNotified(status.id, status.latestVersion)) {
         continue;
       }
 
