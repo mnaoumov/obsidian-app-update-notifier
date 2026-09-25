@@ -206,17 +206,7 @@ async function openDetailsPanel(): Promise<DetailsProbe> {
     vaultPath: vaultPath()
   });
 
-  const statusBarText = await pollInObsidian({
-    input: { statusBarSelector: STATUS_BAR_SELECTOR },
-    intervalInMilliseconds: POLL_INTERVAL_IN_MILLISECONDS,
-    poll({ statusBarSelector }): string {
-      return document.querySelector(statusBarSelector)?.textContent ?? '';
-    },
-    timeoutInMilliseconds: FEED_TIMEOUT_IN_MILLISECONDS,
-    timeoutMessage: 'a check never reached a real answer',
-    until: (text: string): boolean => text !== '' && !text.includes('not checked'),
-    vaultPath: vaultPath()
-  });
+  const statusBarText = await waitForCheckAnswer();
 
   await pollInObsidian({
     input: { modalSelector: MODAL_SELECTOR, pluginId: PLUGIN_ID },
@@ -273,6 +263,14 @@ async function openDetailsPanel(): Promise<DetailsProbe> {
  * @returns The names of the rendered settings.
  */
 async function openSettingsTab(): Promise<SettingsProbe> {
+  /*
+   * The settings panel shows nothing a check produces, and still has to wait for one: the pinned
+   * installer makes the first check raise the plugin's own update notice on every run, and a check still
+   * in flight when `shoot()` dismisses the notices lands its notice afterwards, over the panel. The
+   * mobile twin photographed exactly that on 2026-09-24.
+   */
+  await waitForCheckAnswer();
+
   return await evalInObsidian({
     async callback({ app, lib: { waitUntil }, pluginId }): Promise<SettingsProbe> {
       const RENDER_TIMEOUT_IN_MILLISECONDS = 20_000;
@@ -343,4 +341,27 @@ function summaryOf(probe: DetailsProbe, heading: string): string {
 
 function vaultPath(): string {
   return getTemporaryVault().path;
+}
+
+/**
+ * Waits until the status bar item stops saying "not checked", i.e. until a check has reached a real answer.
+ *
+ * `UpdateCheckerComponent.check()` raises its notices BEFORE it refreshes the status bar, so once this
+ * resolves, every notice that check will raise is already standing, and `dismissNotices()` clears it for
+ * good — a version is notified once.
+ *
+ * @returns The status bar text the check left behind.
+ */
+async function waitForCheckAnswer(): Promise<string> {
+  return await pollInObsidian({
+    input: { statusBarSelector: STATUS_BAR_SELECTOR },
+    intervalInMilliseconds: POLL_INTERVAL_IN_MILLISECONDS,
+    poll({ statusBarSelector }): string {
+      return document.querySelector(statusBarSelector)?.textContent ?? '';
+    },
+    timeoutInMilliseconds: FEED_TIMEOUT_IN_MILLISECONDS,
+    timeoutMessage: 'a check never reached a real answer',
+    until: (text: string): boolean => text !== '' && !text.includes('not checked'),
+    vaultPath: vaultPath()
+  });
 }

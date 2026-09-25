@@ -184,17 +184,7 @@ async function openDetailsPanel(): Promise<DetailsProbe> {
    * failed on a freshly booted emulator whose network had not validated. The desktop twin has
    * always waited here; the mobile one had not.
    */
-  await pollInObsidian({
-    input: { statusBarSelector: STATUS_BAR_SELECTOR },
-    intervalInMilliseconds: POLL_INTERVAL_IN_MILLISECONDS,
-    poll({ statusBarSelector }): string {
-      return document.querySelector(statusBarSelector)?.textContent ?? '';
-    },
-    timeoutInMilliseconds: FEED_TIMEOUT_IN_MILLISECONDS,
-    timeoutMessage: 'a check never reached a real answer',
-    until: (statusBarText: string): boolean => statusBarText !== '' && !statusBarText.includes('not checked'),
-    vaultPath: vaultPath()
-  });
+  await waitForCheckAnswer();
 
   await pollInObsidian({
     input: { modalSelector: MODAL_SELECTOR, pluginId: PLUGIN_ID },
@@ -239,6 +229,14 @@ async function openDetailsPanel(): Promise<DetailsProbe> {
  * @returns The names of the rendered settings.
  */
 async function openSettingsTab(): Promise<SettingsProbe> {
+  /*
+   * The settings panel shows nothing a check produces, and still has to wait for one: the first check
+   * raises the plugin's own update notice whenever the AVD's Obsidian is behind the public feed, and a
+   * check still in flight when `shoot()` dismisses the notices lands its notice afterwards, over the
+   * settings header. A re-shot frame came out exactly that way on 2026-09-24.
+   */
+  await waitForCheckAnswer();
+
   await pollInObsidian({
     input: { pluginId: PLUGIN_ID },
     intervalInMilliseconds: POLL_INTERVAL_IN_MILLISECONDS,
@@ -309,4 +307,27 @@ async function shoot(index: number, caption: string): Promise<void> {
 
 function vaultPath(): string {
   return getTemporaryVault().path;
+}
+
+/**
+ * Waits until the status bar item stops saying "not checked", i.e. until a check has reached a real answer.
+ *
+ * `UpdateCheckerComponent.check()` raises its notices BEFORE it refreshes the status bar, so once this
+ * resolves, every notice that check will raise is already standing, and `dismissNotices()` clears it for
+ * good — a version is notified once.
+ *
+ * @returns The status bar text the check left behind.
+ */
+async function waitForCheckAnswer(): Promise<string> {
+  return await pollInObsidian({
+    input: { statusBarSelector: STATUS_BAR_SELECTOR },
+    intervalInMilliseconds: POLL_INTERVAL_IN_MILLISECONDS,
+    poll({ statusBarSelector }): string {
+      return document.querySelector(statusBarSelector)?.textContent ?? '';
+    },
+    timeoutInMilliseconds: FEED_TIMEOUT_IN_MILLISECONDS,
+    timeoutMessage: 'a check never reached a real answer',
+    until: (statusBarText: string): boolean => statusBarText !== '' && !statusBarText.includes('not checked'),
+    vaultPath: vaultPath()
+  });
 }
