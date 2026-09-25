@@ -130,7 +130,7 @@ describe('mobile store screenshots', () => {
      */
     expect(probe.actionsText).not.toContain('installer');
     expect(probe.actionsText).not.toContain('Settings → General → Check for updates');
-    await shoot(2, 'The app stream, with a changelog link — no installer on mobile');
+    await shoot(2, 'App stream and changelog link — no installer on mobile');
   });
 });
 

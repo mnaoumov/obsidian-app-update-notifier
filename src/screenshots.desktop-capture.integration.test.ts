@@ -132,7 +132,7 @@ describe('desktop store screenshots', () => {
     expect(probe.settingNames).toContain('Check interval');
     expect(probe.settingNames).toContain('Insider builds');
     expect(probe.settingNames).toContain('Watch the installer');
-    await shoot(1, 'Every option in one place, including what Obsidian itself is set to');
+    await shoot(1, 'Every option in one place, plus what Obsidian is set to');
   });
 
   it('2 - what it found, and where to read about it', async () => {
