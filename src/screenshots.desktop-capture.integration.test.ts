@@ -52,6 +52,7 @@ import {
 import { join } from 'node:path';
 import process from 'node:process';
 import {
+  applyObsidianTheme,
   captureObsidianScreenshot,
   evalInObsidian,
   labelScreenshot,
@@ -111,11 +112,11 @@ const POLL_INTERVAL_IN_MILLISECONDS = 1000;
 const IMAGES_DIRECTORY = join(process.cwd(), 'images', 'screenshots');
 
 beforeAll(async () => {
+  await applyObsidianTheme({ theme: 'dark', vaultPath: vaultPath() });
   await evalInObsidian({
     async callback({ app }) {
       const SETTLE_DELAY_IN_MILLISECONDS = 1000;
 
-      app.changeTheme('obsidian');
       app.workspace.leftSplit.collapse();
 
       await sleep(SETTLE_DELAY_IN_MILLISECONDS);
