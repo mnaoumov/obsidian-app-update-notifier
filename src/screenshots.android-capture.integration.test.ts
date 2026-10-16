@@ -58,13 +58,6 @@ interface DetailsProbe {
   readonly streamHeadings: string[];
 }
 
-/**
- * Obsidian's settings modal, reduced to the container `obsidian-typings` does not declare.
- */
-interface SettingsModalWithContainer {
-  containerEl: HTMLElement;
-}
-
 interface SettingsProbe {
   readonly settingNames: string[];
 }
@@ -247,8 +240,7 @@ async function openSettingsTab(): Promise<SettingsProbe> {
     async start({ app, pluginId }): Promise<void> {
       const OPEN_DELAY_IN_MILLISECONDS = 500;
 
-      const settingsModal: unknown = app.setting;
-      const containerEl = (settingsModal as SettingsModalWithContainer).containerEl;
+      const { containerEl } = app.setting;
       if (!document.body.contains(containerEl)) {
         document.body.append(containerEl);
       }
