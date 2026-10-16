@@ -140,6 +140,11 @@ describe('checkIsAutoUpdateDisabled', () => {
     expect(sendSync).toHaveBeenCalledWith('disable-update');
   });
 
+  it('should read an absent flag as enabled, because Obsidian deletes it rather than storing false', () => {
+    sendSync.mockReturnValue(undefined);
+    expect(checkIsAutoUpdateDisabled()).toBe(false);
+  });
+
   it('should not apply on mobile', () => {
     platform.isDesktopApp = false;
     expect(checkIsAutoUpdateDisabled()).toBeNull();

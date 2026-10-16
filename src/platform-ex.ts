@@ -3,36 +3,14 @@
  *
  * The single place this plugin reads Obsidian's own version and update state from.
  *
- * Two of the reads have no declaration to lean on: `Platform.version` (the APP version) and
- * `Platform.build` (the INSTALLER version) are both populated by Obsidian at startup —
- * `app.js:226329-226330` assigns them from `ipcRenderer.sendSync('version')` and
- * `electron.remote.app.getVersion()` — yet `PlatformEx` in `obsidian-typings` declares neither. Every
- * such read is funnelled through this module so there is exactly one cast in the plugin; when
- * `PlatformEx` declares them, {@link PlatformVersions} is deleted and the casts become plain reads.
+ * `Platform.version` (the APP version) and `Platform.build` (the INSTALLER version) are both populated by
+ * Obsidian at startup — `app.js:226329-226330` assigns them from `ipcRenderer.sendSync('version')` and
+ * `electron.remote.app.getVersion()` — and are read here through `obsidian-typings`' `PlatformEx`. Both are
+ * initialized to `''` (`app.js:40090-40091`), so an empty string means "not populated".
  */
 
+import { getPlatformEx } from '@obsidian-typings/obsidian-public-latest/implementations';
 import { Platform } from 'obsidian';
-
-/**
- * The two `Platform` members this plugin needs that `PlatformEx` does not declare.
- *
- * Both are plain `string` fields on Obsidian's `Platform` object (`app.js:40090-40091`), initialized to
- * `''` and filled in during startup, so neither is optional at the time a plugin can observe them.
- */
-interface PlatformVersions {
-  /**
-   * The installer version — the version of the Obsidian executable that was installed, which updates
-   * independently of {@link PlatformVersions.version} and determines the bundled Electron.
-   */
-  build: string;
-
-  /**
-   * The app version — the version of the `obsidian.asar` bundle currently running.
-   */
-  version: string;
-}
-
-const platformWithVersions = Platform as PlatformVersions & typeof Platform;
 
 const DOWNLOAD_URL = 'https://obsidian.md/download';
 
@@ -56,7 +34,8 @@ const OS_BY_NODE_PLATFORM: Readonly<Record<string, string>> = {
  */
 export function checkIsAutoUpdateDisabled(): boolean | null {
   const ipcRenderer = getIpcRenderer();
-  return ipcRenderer ? (ipcRenderer.sendSync('disable-update') as boolean) : null;
+  // Obsidian deletes the stored flag rather than storing `false`, so "enabled" reads back as `undefined`.
+  return ipcRenderer ? ipcRenderer.sendSync('disable-update') === true : null;
 }
 
 /**
@@ -70,7 +49,7 @@ export function checkIsAutoUpdateDisabled(): boolean | null {
  */
 export function checkIsInsiderBuild(): boolean | null {
   const ipcRenderer = getIpcRenderer();
-  return ipcRenderer ? (ipcRenderer.sendSync('insider-build', null) as boolean) : null;
+  return ipcRenderer ? ipcRenderer.sendSync('insider-build', null) : null;
 }
 
 /**
@@ -79,7 +58,7 @@ export function checkIsInsiderBuild(): boolean | null {
  * @returns The app version, or `null` when Obsidian has not populated it.
  */
 export function getAppVersion(): null | string {
-  return platformWithVersions.version || null;
+  return getPlatformEx().version || null;
 }
 
 /**
@@ -124,7 +103,7 @@ export function getElectronVersion(): null | string {
  * @returns The installer version, or `null` on mobile, where the distinction does not exist.
  */
 export function getInstallerVersion(): null | string {
-  return Platform.isDesktopApp ? platformWithVersions.build || null : null;
+  return Platform.isDesktopApp ? getPlatformEx().build || null : null;
 }
 
 function getIpcRenderer(): null | typeof window.electron.ipcRenderer {
