@@ -1,11 +1,11 @@
+import type { PluginNoticeComponent } from '@mnaoumov/obsidian-lib/components/plugin-notice-component';
 import type { App } from 'obsidian';
-import type { PluginNoticeComponent } from 'obsidian-dev-utils/obsidian/components/plugin-notice-component';
 
+import { ComponentEx } from '@mnaoumov/obsidian-lib/components/component-ex';
+import { CallbackLayoutReadyComponent } from '@mnaoumov/obsidian-lib/components/layout-ready-component';
+import { convertAsyncToSync } from '@mnaoumov/typescript-lib/async';
+import { getDebugger } from '@mnaoumov/typescript-lib/debug';
 import { Platform } from 'obsidian';
-import { convertAsyncToSync } from 'obsidian-dev-utils/async';
-import { getDebugger } from 'obsidian-dev-utils/debug';
-import { ComponentEx } from 'obsidian-dev-utils/obsidian/components/component-ex';
-import { CallbackLayoutReadyComponent } from 'obsidian-dev-utils/obsidian/components/layout-ready-component';
 
 import type { ObsidianMetadata } from './obsidian-metadata-api.ts';
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';

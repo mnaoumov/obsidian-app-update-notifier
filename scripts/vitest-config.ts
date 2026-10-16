@@ -1,7 +1,7 @@
-import type { ObsidianPluginVitestConfigContext } from 'obsidian-dev-utils/script-utils/test-runners/vitest-config';
+import type { ObsidianPluginVitestConfigContext } from '@mnaoumov/obsidian-dev-toolkit/test-runners/vitest-config';
 import type { TestProjectConfiguration } from 'vitest/config';
 
-import { defineObsidianPluginVitestConfig } from 'obsidian-dev-utils/script-utils/test-runners/vitest-config';
+import { defineObsidianPluginVitestConfig } from '@mnaoumov/obsidian-dev-toolkit/test-runners/vitest-config';
 
 /**
  * The screenshot-capture suites that write
@@ -66,7 +66,7 @@ const CAPTURE_INSTALLER_VERSION = '1.13.4';
  * that reads as nonsense to a store visitor. Following the public line keeps the App row
  * saying `Up to date.` and keeps the shots on current Obsidian chrome.
  *
- * This overrides the `OBSIDIAN_VERSION` escape hatch `obsidian-dev-utils` honours on
+ * This overrides the `OBSIDIAN_VERSION` escape hatch `@mnaoumov/obsidian-dev-toolkit` honours on
  * `integration-tests:desktop`, for this project only: a capture is not a test run, and a screenshot taken
  * against an arbitrary version is the defect above.
  */

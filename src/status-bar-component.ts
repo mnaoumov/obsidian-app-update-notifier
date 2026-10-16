@@ -1,8 +1,8 @@
+import type { StatusBarItemRegistrar } from '@mnaoumov/obsidian-lib/status-bar-item-registrar';
 import type { App } from 'obsidian';
-import type { StatusBarItemRegistrar } from 'obsidian-dev-utils/obsidian/status-bar-item-registrar';
 
-import { invokeAsyncSafely } from 'obsidian-dev-utils/async';
-import { ComponentEx } from 'obsidian-dev-utils/obsidian/components/component-ex';
+import { ComponentEx } from '@mnaoumov/obsidian-lib/components/component-ex';
+import { invokeAsyncSafely } from '@mnaoumov/typescript-lib/async';
 
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 import type { UpdateCheckerComponent } from './update-checker-component.ts';

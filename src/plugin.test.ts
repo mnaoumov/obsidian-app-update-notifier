@@ -3,8 +3,8 @@ import type {
   PluginManifest
 } from 'obsidian';
 
-import { castTo } from 'obsidian-dev-utils/object-utils';
-import { PluginSettingsTabComponent } from 'obsidian-dev-utils/obsidian/components/plugin-settings-tab-component';
+import { PluginSettingsTabComponent } from '@mnaoumov/obsidian-lib/components/plugin-settings-tab-component';
+import { castTo } from '@mnaoumov/typescript-lib/object-utils';
 import { App as AppCls } from 'obsidian-test-mocks/obsidian';
 import {
   beforeEach,
@@ -49,7 +49,7 @@ vi.mock('./plugin-settings-tab.ts', () => ({
 
 vi.mock('./update-checker-component.ts', async () => {
   const { Component } = await vi.importActual<ComponentModuleActual>('obsidian');
-  const { noopAsync } = await vi.importActual<typeof import('obsidian-dev-utils/function')>('obsidian-dev-utils/function');
+  const { noopAsync } = await vi.importActual<typeof import('@mnaoumov/typescript-lib/function')>('@mnaoumov/typescript-lib/function');
   class UpdateCheckerComponent extends Component {
     public addResultListener = vi.fn();
     public check = vi.fn(() => noopAsync());

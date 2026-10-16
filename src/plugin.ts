@@ -1,9 +1,9 @@
-import { OpenDemoVaultCommandHandler } from 'obsidian-dev-utils/obsidian/command-handlers/open-demo-vault-command-handler';
-import { PluginSettingsTabComponent } from 'obsidian-dev-utils/obsidian/components/plugin-settings-tab-component';
-import { PluginDataHandler } from 'obsidian-dev-utils/obsidian/data-handler';
-import { PluginBase } from 'obsidian-dev-utils/obsidian/plugin/plugin';
-import { PluginEventSourceImpl } from 'obsidian-dev-utils/obsidian/plugin/plugin-event-source';
-import { PluginStatusBarItemRegistrar } from 'obsidian-dev-utils/obsidian/status-bar-item-registrar';
+import { OpenDemoVaultCommandHandler } from '@mnaoumov/obsidian-lib/command-handlers/open-demo-vault-command-handler';
+import { PluginSettingsTabComponent } from '@mnaoumov/obsidian-lib/components/plugin-settings-tab-component';
+import { PluginDataHandler } from '@mnaoumov/obsidian-lib/data-handler';
+import { PluginBase } from '@mnaoumov/obsidian-lib/plugin/plugin';
+import { PluginEventSourceImpl } from '@mnaoumov/obsidian-lib/plugin/plugin-event-source';
+import { PluginStatusBarItemRegistrar } from '@mnaoumov/obsidian-lib/status-bar-item-registrar';
 
 import { CheckForUpdatesCommandHandler } from './check-for-updates-command-handler.ts';
 import { PluginSettingsComponent as PluginSettingsComponentImpl } from './plugin-settings-component.ts';

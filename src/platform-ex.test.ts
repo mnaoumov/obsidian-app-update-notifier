@@ -1,5 +1,5 @@
+import { castTo } from '@mnaoumov/typescript-lib/object-utils';
 import { Platform } from 'obsidian';
-import { castTo } from 'obsidian-dev-utils/object-utils';
 import {
   afterEach,
   beforeEach,
