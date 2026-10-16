@@ -1,13 +1,13 @@
 import type {
   ModalBaseConstructorParams,
   ModalParamsBase
-} from 'obsidian-dev-utils/obsidian/modals/modal';
+} from '@mnaoumov/obsidian-lib/modals/modal';
 
-import { convertAsyncToSync } from 'obsidian-dev-utils/async';
 import {
   ModalBase,
   showModal
-} from 'obsidian-dev-utils/obsidian/modals/modal';
+} from '@mnaoumov/obsidian-lib/modals/modal';
+import { convertAsyncToSync } from '@mnaoumov/typescript-lib/async';
 
 import type { ElectronSpan } from './electron-span.ts';
 import type {

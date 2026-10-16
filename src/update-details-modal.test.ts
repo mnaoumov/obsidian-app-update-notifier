@@ -1,8 +1,8 @@
+import type { ModalBase } from '@mnaoumov/obsidian-lib/modals/modal';
 import type { App as AppOriginal } from 'obsidian';
-import type { ModalBase } from 'obsidian-dev-utils/obsidian/modals/modal';
 
-import { noopAsync } from 'obsidian-dev-utils/function';
-import { showModal } from 'obsidian-dev-utils/obsidian/modals/modal';
+import { showModal } from '@mnaoumov/obsidian-lib/modals/modal';
+import { noopAsync } from '@mnaoumov/typescript-lib/function';
 import { App } from 'obsidian-test-mocks/obsidian';
 import {
   beforeEach,
@@ -26,8 +26,8 @@ import {
 } from './release-streams.ts';
 import { showUpdateDetails } from './update-details-modal.ts';
 
-vi.mock('obsidian-dev-utils/obsidian/modals/modal', async (importOriginal) => ({
-  ...await importOriginal<typeof import('obsidian-dev-utils/obsidian/modals/modal')>(),
+vi.mock('@mnaoumov/obsidian-lib/modals/modal', async (importOriginal) => ({
+  ...await importOriginal<typeof import('@mnaoumov/obsidian-lib/modals/modal')>(),
   showModal: vi.fn()
 }));
 

@@ -4,7 +4,6 @@ import {
   Notice,
   Platform
 } from 'obsidian';
-import { configureCommunityPlugin } from 'obsidian-dev-utils/obsidian/community-plugins';
 
 const PLUGIN_ID = 'app-update-notifier';
 
@@ -16,6 +15,10 @@ interface DemoSettingsPatch {
   notifiedVersions?: Record<string, string>;
   shouldShowStatusBarItem?: boolean;
   shouldWatchInstallerStream?: boolean;
+}
+
+interface EditableSettingsComponent {
+  editAndSave(editor: (settings: DemoSettingsPatch) => void): Promise<void>;
 }
 
 interface PlatformVersions {
@@ -32,11 +35,7 @@ interface PlatformVersions {
  * @param patch - The settings to change.
  */
 export async function changeSettings(app: App, patch: DemoSettingsPatch): Promise<void> {
-  await configureCommunityPlugin({
-    app,
-    pluginId: PLUGIN_ID,
-    settings: patch
-  });
+  await editSettings(app, patch);
   new Notice('Applied.');
 }
 
@@ -62,15 +61,11 @@ export function checkForUpdatesNow(app: App): void {
  * @param app - The Obsidian app.
  */
 export async function forgetAnnouncedVersions(app: App): Promise<void> {
-  await configureCommunityPlugin({
-    app,
-    pluginId: PLUGIN_ID,
-    settings: {
-      notifiedVersions: {
-        app: '',
-        beta: '',
-        installer: ''
-      }
+  await editSettings(app, {
+    notifiedVersions: {
+      app: '',
+      beta: '',
+      installer: ''
     }
   });
   new Notice('Forgotten. The next check announces whatever it finds.');
@@ -119,4 +114,21 @@ function describeAutoUpdate(): string {
   // `disable-update` is read-only in this form. Never pass a second argument here — with one, the same
   // channel WRITES the setting.
   return window.electron.ipcRenderer.sendSync('disable-update') ? 'off' : 'on';
+}
+
+/*
+ * Vault scripts can import only what `CodeScript Toolkit` serves as a built-in module, and it serves none of
+ * the `@mnaoumov` packages yet, so this goes through the plugin's own settings component directly — the
+ * same live `editAndSave` the library helper used, and what the settings tab itself calls.
+ */
+async function editSettings(app: App, patch: DemoSettingsPatch): Promise<void> {
+  const plugin = app.plugins.getPlugin(PLUGIN_ID) as null | { pluginSettingsComponent?: EditableSettingsComponent };
+  const settingsComponent = plugin?.pluginSettingsComponent;
+  if (!settingsComponent) {
+    throw new Error(`Plugin '${PLUGIN_ID}' is not enabled.`);
+  }
+
+  await settingsComponent.editAndSave((settings) => {
+    Object.assign(settings, patch);
+  });
 }

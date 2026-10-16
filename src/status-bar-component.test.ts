@@ -1,10 +1,10 @@
+import type { StatusBarItemRegistrar } from '@mnaoumov/obsidian-lib/status-bar-item-registrar';
 import type { App as AppOriginal } from 'obsidian';
-import type { StatusBarItemRegistrar } from 'obsidian-dev-utils/obsidian/status-bar-item-registrar';
 
-import { waitForAllAsyncOperations } from 'obsidian-dev-utils/async';
-import { noopAsync } from 'obsidian-dev-utils/function';
-import { castTo } from 'obsidian-dev-utils/object-utils';
-import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
+import { noopAsync } from '@mnaoumov/typescript-lib/function';
+import { castTo } from '@mnaoumov/typescript-lib/object-utils';
+import { waitForAllAsyncOperations } from '@mnaoumov/typescript-test-toolkit/async-operation-tracking';
+import { strictProxy } from '@mnaoumov/typescript-test-toolkit/strict-proxy';
 import { App } from 'obsidian-test-mocks/obsidian';
 import {
   beforeEach,
