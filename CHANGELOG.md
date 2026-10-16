@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 1.0.4
+
+- build: merge moving off obsidian-dev-utils onto the @mnaoumov packages
+- docs: mark plugin names as code in comments
+- refactor: merge reading Platform versions and IPC toggles through obsidian-typings
+- test: merge using the obsidian-typings declarations of Obsidian internals
+
 ## 1.0.3
 
 - test(screenshots): merge the dark theme set through applyObsidianTheme
