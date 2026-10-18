@@ -1,6 +1,6 @@
 # Settings
 
-Every setting the plugin owns, by the key it is stored under in `data.json`, grouped by the section it appears in on the settings tab. Open the tab with **Settings -> Community plugins -> App Update Notifier**.
+Every setting the plugin owns, by the key it is stored under in `data.json`, grouped by the section it appears in on the settings tab. Open the tab with **Settings -> Community plugins -> `App Update Notifier`**.
 
 ## Checking
 
