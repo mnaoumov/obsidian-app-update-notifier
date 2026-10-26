@@ -58,6 +58,13 @@ Obsidian's version is three separate answers that move independently, and this p
 
 Checks run once at startup and then hourly, matching Obsidian's own updater; the interval is configurable, and `0` leaves only the command. A check makes four requests, one of which reaches GitHub's API — so an hourly check uses one of its sixty per hour. A failed check is silent and keeps the last answer it had, rather than reporting "up to date" when it means "could not tell".
 
+## Similar plugins
+
+- [`Plugin Update Tracker`](https://community.obsidian.md/plugins/obsidian-plugin-update-tracker) — watches your installed community plugins for updates and helps judge the risk of taking one; it does not watch Obsidian's own app, Catalyst or installer releases, which are all this plugin watches.
+- [`Update Radar`](https://community.obsidian.md/plugins/update-radar) — checks your installed community plugins and themes for updates in the background, shows their release notes and flags abandoned ones; like the one above, it covers add-ons rather than Obsidian itself.
+
+Last searched for similar plugins on 2026-10-26.
+
 ## Installation
 
 The plugin is available in [the official Community Plugins repository](https://community.obsidian.md/plugins/app-update-notifier).
