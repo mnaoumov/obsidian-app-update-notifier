@@ -58,10 +58,14 @@ Obsidian's version is three separate answers that move independently, and this p
 
 Checks run once at startup and then hourly, matching Obsidian's own updater; the interval is configurable, and `0` leaves only the command. A check makes four requests, one of which reaches GitHub's API — so an hourly check uses one of its sixty per hour. A failed check is silent and keeps the last answer it had, rather than reporting "up to date" when it means "could not tell".
 
-## Similar plugins
+## See also
 
-- [`Plugin Update Tracker`](https://community.obsidian.md/plugins/obsidian-plugin-update-tracker) — watches your installed community plugins for updates and helps judge the risk of taking one; it does not watch Obsidian's own app, Catalyst or installer releases, which are all this plugin watches.
-- [`Update Radar`](https://community.obsidian.md/plugins/update-radar) — checks your installed community plugins and themes for updates in the background, shows their release notes and flags abandoned ones; like the one above, it covers add-ons rather than Obsidian itself.
+[My other Obsidian resources](https://github.com/mnaoumov/obsidian-resources)
+
+| Plugin | Features | How `App Update Notifier` differs |
+| --- | --- | --- |
+| [`Plugin Update Tracker`](https://community.obsidian.md/plugins/obsidian-plugin-update-tracker) | Community-plugin update tracking and risk assessment | Complementary updates: Obsidian app, Catalyst and installer releases only |
+| [`Update Radar`](https://community.obsidian.md/plugins/update-radar) | Plugin/theme update checks; release notes; abandoned-addon flags | Complementary updates: Obsidian releases rather than add-ons |
 
 Last searched for similar plugins on 2026-10-26.
 
@@ -98,10 +102,6 @@ Contributions are welcome — see [CONTRIBUTING](./CONTRIBUTING.md) to get set u
 <a href="https://www.buymeacoffee.com/mnaoumov" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60" width="217"></a>
 
 <!-- markdownlint-enable MD033 -->
-
-## My other Obsidian resources
-
-[See my other Obsidian resources](https://github.com/mnaoumov/obsidian-resources).
 
 ## License
 
