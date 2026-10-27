@@ -37,10 +37,10 @@ export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
             }),
             name: 'Check interval',
             render: (setting) => {
-              setting.addNumber((number) => {
+              setting.addNumber(($number) => {
                 this.bind({
                   propertyName: 'checkIntervalInMinutes',
-                  valueComponent: number
+                  valueComponent: $number
                 });
               });
             }
