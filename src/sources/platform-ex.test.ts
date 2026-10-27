@@ -19,9 +19,13 @@ import {
 } from './platform-ex.ts';
 
 interface MutablePlatform {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this platform property to simulate runtime environments.
   build: string;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this platform property to simulate runtime environments.
   isAndroidApp: boolean;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this platform property to simulate runtime environments.
   isDesktopApp: boolean;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this platform property to simulate runtime environments.
   version: string;
 }
 

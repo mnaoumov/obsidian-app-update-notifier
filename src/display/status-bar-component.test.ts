@@ -24,7 +24,7 @@ import { StatusBarComponent } from './status-bar-component.ts';
 import { showUpdateDetails } from './update-details-modal.ts';
 
 interface LastResultValue {
-  statuses: readonly ReleaseStreamStatus[];
+  readonly statuses: readonly ReleaseStreamStatus[];
 }
 
 vi.mock('./update-details-modal.ts', () => ({
