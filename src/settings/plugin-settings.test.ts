@@ -4,13 +4,13 @@ import {
   it
 } from 'vitest';
 
+import { ReleaseStreamId } from '../update-check/release-streams.ts';
 import {
   BetaStreamMode,
   DEFAULT_CHECK_INTERVAL_IN_MINUTES,
   MIN_CHECK_INTERVAL_IN_MINUTES,
   PluginSettings
 } from './plugin-settings.ts';
-import { ReleaseStreamId } from './release-streams.ts';
 
 describe('PluginSettings', () => {
   describe('defaults', () => {

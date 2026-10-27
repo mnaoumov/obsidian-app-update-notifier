@@ -12,7 +12,7 @@ import {
   vi
 } from 'vitest';
 
-import type { UpdateCheckerComponent } from './update-checker-component.ts';
+import type { UpdateCheckerComponent } from '../update-check/update-checker-component.ts';
 
 import { CheckForUpdatesCommandHandler } from './check-for-updates-command-handler.ts';
 import { showUpdateDetails } from './update-details-modal.ts';

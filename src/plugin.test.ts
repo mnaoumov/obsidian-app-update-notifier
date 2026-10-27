@@ -26,9 +26,9 @@ const { refresh } = vi.hoisted(() => ({ refresh: vi.fn() }));
 
 // Stub the plugin's OWN sibling modules, each extending the real test-mocks `Component` so the real
 // `PluginBase` lifecycle can load them as children without their heavy dependencies.
-vi.mock('./plugin-settings-component.ts', async () => {
+vi.mock('./settings/plugin-settings-component.ts', async () => {
   const { Component } = await vi.importActual<ComponentModuleActual>('obsidian');
-  const { PluginSettings } = await vi.importActual<typeof import('./plugin-settings.ts')>('./plugin-settings.ts');
+  const { PluginSettings } = await vi.importActual<typeof import('./settings/plugin-settings.ts')>('./settings/plugin-settings.ts');
   class PluginSettingsComponent extends Component {
     public saveSettingsListeners: (() => void)[] = [];
     public settings = new PluginSettings();
@@ -43,11 +43,11 @@ vi.mock('./plugin-settings-component.ts', async () => {
   return { PluginSettingsComponent };
 });
 
-vi.mock('./plugin-settings-tab.ts', () => ({
+vi.mock('./settings/plugin-settings-tab.ts', () => ({
   PluginSettingsTab: vi.fn()
 }));
 
-vi.mock('./update-checker-component.ts', async () => {
+vi.mock('./update-check/update-checker-component.ts', async () => {
   const { Component } = await vi.importActual<ComponentModuleActual>('obsidian');
   const { noopAsync } = await vi.importActual<typeof import('@mnaoumov/typescript-lib/function')>('@mnaoumov/typescript-lib/function');
   class UpdateCheckerComponent extends Component {
@@ -58,7 +58,7 @@ vi.mock('./update-checker-component.ts', async () => {
   return { UpdateCheckerComponent };
 });
 
-vi.mock('./status-bar-component.ts', async () => {
+vi.mock('./display/status-bar-component.ts', async () => {
   const { Component } = await vi.importActual<ComponentModuleActual>('obsidian');
   class StatusBarComponent extends Component {
     public refresh = refresh;
@@ -67,13 +67,13 @@ vi.mock('./status-bar-component.ts', async () => {
 });
 
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { PluginSettingsComponent } from './plugin-settings-component.ts';
+import { StatusBarComponent } from './display/status-bar-component.ts';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { Plugin } from './plugin.ts';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { StatusBarComponent } from './status-bar-component.ts';
+import { PluginSettingsComponent } from './settings/plugin-settings-component.ts';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { UpdateCheckerComponent } from './update-checker-component.ts';
+import { UpdateCheckerComponent } from './update-check/update-checker-component.ts';
 
 const PLUGIN_MANIFEST: PluginManifest = {
   author: 'test',

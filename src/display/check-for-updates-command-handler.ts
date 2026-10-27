@@ -2,7 +2,7 @@ import type { App } from 'obsidian';
 
 import { GlobalCommandHandler } from '@mnaoumov/obsidian-lib/command-handlers/global-command-handler';
 
-import type { UpdateCheckerComponent } from './update-checker-component.ts';
+import type { UpdateCheckerComponent } from '../update-check/update-checker-component.ts';
 
 import { showUpdateDetails } from './update-details-modal.ts';
 

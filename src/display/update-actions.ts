@@ -8,10 +8,10 @@
  * goes back to look — the same person reads both, and two copies of this wording would drift.
  */
 
-import type { ElectronStatus } from './release-streams.ts';
+import type { ElectronStatus } from '../update-check/release-streams.ts';
 
-import { getDownloadUrl } from './platform-ex.ts';
-import { ReleaseStreamId } from './release-streams.ts';
+import { getDownloadUrl } from '../sources/platform-ex.ts';
+import { ReleaseStreamId } from '../update-check/release-streams.ts';
 
 /**
  * Options for {@link appendUpdateActions}.

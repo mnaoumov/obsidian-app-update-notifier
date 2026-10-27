@@ -11,16 +11,16 @@ import {
   vi
 } from 'vitest';
 
-import { checkIsInsiderBuild } from './platform-ex.ts';
+import { checkIsInsiderBuild } from '../sources/platform-ex.ts';
+import { ReleaseStreamId } from '../update-check/release-streams.ts';
 import { PluginSettingsComponent } from './plugin-settings-component.ts';
 import {
   BetaStreamMode,
   DEFAULT_CHECK_INTERVAL_IN_MINUTES,
   MIN_CHECK_INTERVAL_IN_MINUTES
 } from './plugin-settings.ts';
-import { ReleaseStreamId } from './release-streams.ts';
 
-vi.mock('./platform-ex.ts', () => ({
+vi.mock('../sources/platform-ex.ts', () => ({
   checkIsInsiderBuild: vi.fn()
 }));
 

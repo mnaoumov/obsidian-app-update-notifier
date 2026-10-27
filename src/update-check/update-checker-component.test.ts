@@ -14,21 +14,21 @@ import {
   vi
 } from 'vitest';
 
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 
-import { fetchObsidianMetadata } from './obsidian-metadata-api.ts';
+import { PluginSettings } from '../settings/plugin-settings.ts';
+import { fetchObsidianMetadata } from '../sources/obsidian-metadata-api.ts';
 import {
   fetchChangelogEntries,
   fetchDesktopReleases,
   fetchGitHubReleases
-} from './obsidian-releases-api.ts';
+} from '../sources/obsidian-releases-api.ts';
 import {
   checkIsInsiderBuild,
   getAppVersion,
   getElectronVersion,
   getInstallerVersion
-} from './platform-ex.ts';
-import { PluginSettings } from './plugin-settings.ts';
+} from '../sources/platform-ex.ts';
 import { ReleaseStreamId } from './release-streams.ts';
 import { UpdateCheckerComponent } from './update-checker-component.ts';
 
@@ -45,19 +45,19 @@ vi.mock('obsidian', async (importOriginal) => ({
   }
 }));
 
-vi.mock('./obsidian-metadata-api.ts', async (importOriginal) => ({
-  ...await importOriginal<typeof import('./obsidian-metadata-api.ts')>(),
+vi.mock('../sources/obsidian-metadata-api.ts', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../sources/obsidian-metadata-api.ts')>(),
   fetchObsidianMetadata: vi.fn()
 }));
 
-vi.mock('./obsidian-releases-api.ts', async (importOriginal) => ({
-  ...await importOriginal<typeof import('./obsidian-releases-api.ts')>(),
+vi.mock('../sources/obsidian-releases-api.ts', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../sources/obsidian-releases-api.ts')>(),
   fetchChangelogEntries: vi.fn(),
   fetchDesktopReleases: vi.fn(),
   fetchGitHubReleases: vi.fn()
 }));
 
-vi.mock('./platform-ex.ts', () => ({
+vi.mock('../sources/platform-ex.ts', () => ({
   checkIsInsiderBuild: vi.fn(),
   getAppVersion: vi.fn(),
   getDownloadUrl: vi.fn(() => 'https://obsidian.md/download?os=win&arch=x64'),

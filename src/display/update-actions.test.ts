@@ -6,12 +6,12 @@ import {
   vi
 } from 'vitest';
 
-import type { ElectronStatus } from './release-streams.ts';
+import type { ElectronStatus } from '../update-check/release-streams.ts';
 
 import {
   MIN_RECOMMENDED_ELECTRON_VERSION,
   ReleaseStreamId
-} from './release-streams.ts';
+} from '../update-check/release-streams.ts';
 import {
   appendUpdateActions,
   EARLY_ACCESS_URL
@@ -19,7 +19,7 @@ import {
 
 const DOWNLOAD_URL = 'https://obsidian.md/download?os=win&arch=x64';
 
-vi.mock('./platform-ex.ts', () => ({
+vi.mock('../sources/platform-ex.ts', () => ({
   getDownloadUrl: vi.fn(() => DOWNLOAD_URL)
 }));
 

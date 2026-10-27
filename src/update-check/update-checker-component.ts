@@ -7,8 +7,8 @@ import { convertAsyncToSync } from '@mnaoumov/typescript-lib/async';
 import { getDebugger } from '@mnaoumov/typescript-lib/debug';
 import { Platform } from 'obsidian';
 
-import type { ObsidianMetadata } from './obsidian-metadata-api.ts';
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
+import type { ObsidianMetadata } from '../sources/obsidian-metadata-api.ts';
 import type {
   ElectronStatus,
   PlatformSnapshot,
@@ -16,18 +16,19 @@ import type {
   ReleaseStreamStatus
 } from './release-streams.ts';
 
-import { fetchObsidianMetadata } from './obsidian-metadata-api.ts';
+import { appendUpdateActions } from '../display/update-actions.ts';
+import { fetchObsidianMetadata } from '../sources/obsidian-metadata-api.ts';
 import {
   fetchChangelogEntries,
   fetchDesktopReleases,
   fetchGitHubReleases
-} from './obsidian-releases-api.ts';
+} from '../sources/obsidian-releases-api.ts';
 import {
   checkIsInsiderBuild,
   getAppVersion,
   getElectronVersion,
   getInstallerVersion
-} from './platform-ex.ts';
+} from '../sources/platform-ex.ts';
 import {
   ReleaseStreamId,
   resolveAppStreamStatus,
@@ -35,7 +36,6 @@ import {
   resolveElectronStatus,
   resolveInstallerStreamStatus
 } from './release-streams.ts';
-import { appendUpdateActions } from './update-actions.ts';
 
 /**
  * What the most recent SUCCESSFUL check found.

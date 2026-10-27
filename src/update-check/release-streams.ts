@@ -12,18 +12,18 @@ import {
   valid
 } from 'semver';
 
-import type { ObsidianMetadata } from './obsidian-metadata-api.ts';
+import type { ObsidianMetadata } from '../sources/obsidian-metadata-api.ts';
 import type {
   ChangelogEntry,
   DesktopReleases,
   GitHubRelease
-} from './obsidian-releases-api.ts';
+} from '../sources/obsidian-releases-api.ts';
 
 import {
   getMetadataChangelogUrl,
   getMetadataElectronVersion,
   getMetadataMinRecommendedElectronVersion
-} from './obsidian-metadata-api.ts';
+} from '../sources/obsidian-metadata-api.ts';
 import {
   CHANGELOG_INDEX_URL,
   ChangelogPlatform,
@@ -31,7 +31,7 @@ import {
   findLatestAndroidVersion,
   findLatestDesktopInstallerVersion,
   getReleaseChangelogUrl
-} from './obsidian-releases-api.ts';
+} from '../sources/obsidian-releases-api.ts';
 
 /**
  * The three streams. The string values are persisted as keys of the notified-versions record, so they

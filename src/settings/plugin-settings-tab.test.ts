@@ -22,11 +22,11 @@ import {
   vi
 } from 'vitest';
 
-import { checkIsAutoUpdateDisabled } from './platform-ex.ts';
+import { checkIsAutoUpdateDisabled } from '../sources/platform-ex.ts';
 import { PluginSettingsTab } from './plugin-settings-tab.ts';
 import { PluginSettings } from './plugin-settings.ts';
 
-vi.mock('./platform-ex.ts', () => ({
+vi.mock('../sources/platform-ex.ts', () => ({
   checkIsAutoUpdateDisabled: vi.fn()
 }));
 

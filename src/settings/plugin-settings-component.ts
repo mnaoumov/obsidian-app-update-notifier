@@ -3,9 +3,9 @@ import type { PluginEventSource } from '@mnaoumov/obsidian-lib/plugin/plugin-eve
 
 import { PluginSettingsComponentBase } from '@mnaoumov/obsidian-lib/components/plugin-settings-component';
 
-import type { ReleaseStreamId } from './release-streams.ts';
+import type { ReleaseStreamId } from '../update-check/release-streams.ts';
 
-import { checkIsInsiderBuild } from './platform-ex.ts';
+import { checkIsInsiderBuild } from '../sources/platform-ex.ts';
 import {
   BetaStreamMode,
   MIN_CHECK_INTERVAL_IN_MINUTES,
