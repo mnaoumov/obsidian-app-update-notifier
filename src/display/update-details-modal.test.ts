@@ -16,14 +16,14 @@ import type {
   ElectronStatus,
   PlatformSnapshot,
   ReleaseStreamStatus
-} from './release-streams.ts';
-import type { UpdateCheckResult } from './update-checker-component.ts';
+} from '../update-check/release-streams.ts';
+import type { UpdateCheckResult } from '../update-check/update-checker-component.ts';
 
-import { fetchElectronStableVersions } from './electron-releases-api.ts';
+import { fetchElectronStableVersions } from '../sources/electron-releases-api.ts';
 import {
   MIN_RECOMMENDED_ELECTRON_VERSION,
   ReleaseStreamId
-} from './release-streams.ts';
+} from '../update-check/release-streams.ts';
 import { showUpdateDetails } from './update-details-modal.ts';
 
 vi.mock('@mnaoumov/obsidian-lib/modals/modal', async (importOriginal) => ({
@@ -31,7 +31,7 @@ vi.mock('@mnaoumov/obsidian-lib/modals/modal', async (importOriginal) => ({
   showModal: vi.fn()
 }));
 
-vi.mock('./platform-ex.ts', () => ({
+vi.mock('../sources/platform-ex.ts', () => ({
   getDownloadUrl: vi.fn(() => 'https://obsidian.md/download?os=win&arch=x64')
 }));
 
@@ -39,8 +39,8 @@ vi.mock('./platform-ex.ts', () => ({
  * Mocked because the real one fetches a 1.28 MB index. The modal is the ONLY caller, so mocking it here
  * is also what keeps the unit suite from ever reaching the network.
  */
-vi.mock('./electron-releases-api.ts', async (importOriginal) => ({
-  ...await importOriginal<typeof import('./electron-releases-api.ts')>(),
+vi.mock('../sources/electron-releases-api.ts', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../sources/electron-releases-api.ts')>(),
   fetchElectronStableVersions: vi.fn()
 }));
 

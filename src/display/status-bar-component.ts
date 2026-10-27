@@ -4,8 +4,8 @@ import type { App } from 'obsidian';
 import { ComponentEx } from '@mnaoumov/obsidian-lib/components/component-ex';
 import { invokeAsyncSafely } from '@mnaoumov/typescript-lib/async';
 
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
-import type { UpdateCheckerComponent } from './update-checker-component.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
+import type { UpdateCheckerComponent } from '../update-check/update-checker-component.ts';
 
 import { showUpdateDetails } from './update-details-modal.ts';
 

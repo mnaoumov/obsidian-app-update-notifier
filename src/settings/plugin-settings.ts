@@ -1,4 +1,4 @@
-import { ReleaseStreamId } from './release-streams.ts';
+import { ReleaseStreamId } from '../update-check/release-streams.ts';
 
 /**
  * When to watch the insider (Catalyst) stream.

@@ -5,11 +5,11 @@ import { PluginBase } from '@mnaoumov/obsidian-lib/plugin/plugin';
 import { PluginEventSourceImpl } from '@mnaoumov/obsidian-lib/plugin/plugin-event-source';
 import { PluginStatusBarItemRegistrar } from '@mnaoumov/obsidian-lib/status-bar-item-registrar';
 
-import { CheckForUpdatesCommandHandler } from './check-for-updates-command-handler.ts';
-import { PluginSettingsComponent as PluginSettingsComponentImpl } from './plugin-settings-component.ts';
-import { PluginSettingsTab } from './plugin-settings-tab.ts';
-import { StatusBarComponent } from './status-bar-component.ts';
-import { UpdateCheckerComponent } from './update-checker-component.ts';
+import { CheckForUpdatesCommandHandler } from './display/check-for-updates-command-handler.ts';
+import { StatusBarComponent } from './display/status-bar-component.ts';
+import { PluginSettingsComponent as PluginSettingsComponentImpl } from './settings/plugin-settings-component.ts';
+import { PluginSettingsTab } from './settings/plugin-settings-tab.ts';
+import { UpdateCheckerComponent } from './update-check/update-checker-component.ts';
 
 export class Plugin extends PluginBase {
   protected override async onloadImpl(): Promise<void> {

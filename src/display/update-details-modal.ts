@@ -9,20 +9,20 @@ import {
 } from '@mnaoumov/obsidian-lib/modals/modal';
 import { convertAsyncToSync } from '@mnaoumov/typescript-lib/async';
 
-import type { ElectronSpan } from './electron-span.ts';
+import type { ElectronSpan } from '../update-check/electron-span.ts';
 import type {
   ElectronStatus,
   ReleaseStreamStatus
-} from './release-streams.ts';
-import type { UpdateCheckResult } from './update-checker-component.ts';
+} from '../update-check/release-streams.ts';
+import type { UpdateCheckResult } from '../update-check/update-checker-component.ts';
 
 import {
   fetchElectronStableVersions,
   getElectronReleaseUrl
-} from './electron-releases-api.ts';
-import { resolveElectronSpan } from './electron-span.ts';
-import { getDownloadUrl } from './platform-ex.ts';
-import { RELEASE_STREAM_LABELS } from './release-streams.ts';
+} from '../sources/electron-releases-api.ts';
+import { getDownloadUrl } from '../sources/platform-ex.ts';
+import { resolveElectronSpan } from '../update-check/electron-span.ts';
+import { RELEASE_STREAM_LABELS } from '../update-check/release-streams.ts';
 import { appendUpdateActions } from './update-actions.ts';
 
 /**

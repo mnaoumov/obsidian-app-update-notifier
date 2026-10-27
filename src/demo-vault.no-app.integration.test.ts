@@ -9,13 +9,13 @@ import process from 'node:process';
 // state and is configured entirely through its settings — so only the PluginSettings
 // config class is reflected.
 registerDemoVaultCoverageSuite({
-  configInterfaces: [{ interfaceName: 'PluginSettings', sourcePath: 'src/plugin-settings.ts' }],
+  configInterfaces: [{ interfaceName: 'PluginSettings', sourcePath: 'src/settings/plugin-settings.ts' }],
   interfaces: [],
   nonTrivialGuard: {
     expectDemoNote: '03 The installer and Electron.md',
     expectMember: 'shouldWatchInstallerStream',
     interfaceName: 'PluginSettings',
-    sourcePath: 'src/plugin-settings.ts'
+    sourcePath: 'src/settings/plugin-settings.ts'
   },
   rootFolder: getRootFolder() ?? process.cwd()
 });

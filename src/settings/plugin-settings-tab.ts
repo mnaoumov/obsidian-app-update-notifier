@@ -6,7 +6,7 @@ import { Platform } from 'obsidian';
 
 import type { PluginSettings } from './plugin-settings.ts';
 
-import { checkIsAutoUpdateDisabled } from './platform-ex.ts';
+import { checkIsAutoUpdateDisabled } from '../sources/platform-ex.ts';
 import {
   BetaStreamMode,
   MIN_CHECK_INTERVAL_IN_MINUTES

@@ -4,13 +4,13 @@ import {
   it
 } from 'vitest';
 
-import type { ObsidianMetadata } from './obsidian-metadata-api.ts';
+import type { ObsidianMetadata } from '../sources/obsidian-metadata-api.ts';
 import type {
   PlatformSnapshot,
   ReleaseFeeds
 } from './release-streams.ts';
 
-import { CHANGELOG_INDEX_URL } from './obsidian-releases-api.ts';
+import { CHANGELOG_INDEX_URL } from '../sources/obsidian-releases-api.ts';
 import {
   checkIsElectronOutdated,
   MIN_RECOMMENDED_ELECTRON_VERSION,

@@ -14,12 +14,12 @@ import {
   vi
 } from 'vitest';
 
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
-import type { ReleaseStreamStatus } from './release-streams.ts';
-import type { UpdateCheckerComponent } from './update-checker-component.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
+import type { ReleaseStreamStatus } from '../update-check/release-streams.ts';
+import type { UpdateCheckerComponent } from '../update-check/update-checker-component.ts';
 
-import { PluginSettings } from './plugin-settings.ts';
-import { ReleaseStreamId } from './release-streams.ts';
+import { PluginSettings } from '../settings/plugin-settings.ts';
+import { ReleaseStreamId } from '../update-check/release-streams.ts';
 import { StatusBarComponent } from './status-bar-component.ts';
 import { showUpdateDetails } from './update-details-modal.ts';
 
