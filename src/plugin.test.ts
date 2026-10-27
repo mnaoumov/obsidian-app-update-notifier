@@ -15,11 +15,11 @@ import {
 } from 'vitest';
 
 interface ComponentModuleActual {
-  Component: new () => object;
+  readonly Component: new () => object;
 }
 
 interface SaveSettingsListenerHolder {
-  saveSettingsListeners: (() => void)[];
+  readonly saveSettingsListeners: (() => void)[];
 }
 
 const { refresh } = vi.hoisted(() => ({ refresh: vi.fn() }));
