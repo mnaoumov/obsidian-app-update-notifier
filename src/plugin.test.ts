@@ -103,13 +103,14 @@ describe('Plugin', () => {
     plugin.unload();
   });
 
-  it('should register the check and the open-demo-vault commands', async () => {
+  it('should register the check, the report-bug and the open-demo-vault commands', async () => {
     const plugin = new Plugin(createConfiguredApp(), PLUGIN_MANIFEST);
     const addCommandSpy = vi.spyOn(plugin, 'addCommand');
 
     await plugin.onload();
 
     expect(addCommandSpy).toHaveBeenCalledWith(expect.objectContaining({ id: 'check-for-updates' }));
+    expect(addCommandSpy).toHaveBeenCalledWith(expect.objectContaining({ id: 'report-bug' }));
     expect(addCommandSpy).toHaveBeenCalledWith(expect.objectContaining({ id: 'open-demo-vault' }));
     plugin.unload();
   });
