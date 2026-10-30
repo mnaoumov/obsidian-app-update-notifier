@@ -1,5 +1,11 @@
 # AGENTS.md
 
+## Filing an issue (for AI agents and humans)
+
+Open issues through the [issue forms](https://github.com/mnaoumov/obsidian-app-update-notifier/issues/new/choose), not as blank issues.
+
+Filing from the CLI or the API (`gh issue create --body`, or an AI agent filing for you) skips the form, and `gh issue create --template` cannot load an issue form. In that case, open the matching form in [`.github/ISSUE_TEMPLATE/`](https://github.com/mnaoumov/obsidian-app-update-notifier/tree/HEAD/.github/ISSUE_TEMPLATE), copy every field as a `### <label>` heading in the form's order, and fill in each one. Always state the plugin version, the Obsidian version and your operating system.
+
 ## Deviations from the shared plugin architecture
 
 - **`src/sources/platform-ex.ts` is the single place the plugin reads Obsidian's version and update state, and it casts nothing.** `Platform.version` (the APP version) and `Platform.build` (the INSTALLER version), populated at startup (`app.js:226329-226330`), are read through `obsidian-typings`' `getPlatformEx()`, and the two `ipcRenderer.sendSync` probes use the typings' channel overloads. `disable-update` returns `true | undefined`, because Obsidian deletes the stored flag rather than storing `false`, so it is tested with `=== true`.
