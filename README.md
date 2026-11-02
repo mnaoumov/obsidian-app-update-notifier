@@ -60,7 +60,7 @@ Checks run once at startup and then hourly, matching Obsidian's own updater; the
 
 ## See also
 
-[My other Obsidian resources](https://github.com/mnaoumov/obsidian-resources)
+[My other Obsidian resources](https://mnaoumov.dev/obsidian/)
 
 | Plugin | Features | How `App Update Notifier` differs |
 | --- | --- | --- |
