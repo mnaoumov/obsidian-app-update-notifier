@@ -34,7 +34,7 @@ The plugin reads the same public sources Obsidian's own updater does, over `requ
 
 - `desktop-releases.json`
   - the app and insider versions, from the file Obsidian's updater itself reads.
-- the GitHub releases of `obsidianmd/obsidian-releases`
+- the `GitHub` releases of `obsidianmd/obsidian-releases`
   - which versions shipped a desktop installer, and the changelog link each release publishes.
 - Obsidian's changelog feed
   - the changelog for a version that has no public release, which is how an insider version still arrives with somewhere to read.

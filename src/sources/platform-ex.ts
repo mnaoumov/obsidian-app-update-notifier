@@ -85,13 +85,9 @@ export function getDownloadUrl(): string {
  * @returns The Electron version, or `null` on mobile.
  */
 export function getElectronVersion(): null | string {
-  if (!Platform.isDesktopApp) {
-    return null;
-  }
-
   // Bracketed because `process.versions` is an index signature, and `electron` is only present in it
   // when Obsidian is the Electron desktop app.
-  return process.versions['electron'] ?? null;
+  return Platform.isDesktopApp ? process.versions['electron'] ?? null : null;
 }
 
 /**
