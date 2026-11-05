@@ -21,7 +21,7 @@ The plugin reads it from `desktop-releases.json` — the same file Obsidian's ow
 
 The **insider build**, also called Catalyst or early access, is the same app published days ahead of the public release to people who have the Catalyst license. Watching it only makes sense if you can actually install it, so by default the plugin asks Obsidian whether your insider setting is on and follows the answer. You can override that either way — see [05 Settings](<./05 Settings.md>).
 
-An insider version is a real, released version that never appears in the public list. Version 1.13.5 is one: it exists, it has a changelog, and it has no public GitHub release at all. The plugin resolves its changelog from Obsidian's changelog feed rather than from a release, so a Catalyst version still arrives with somewhere to read.
+An insider version is a real, released version that never appears in the public list. Version 1.13.5 is one: it exists, it has a changelog, and it has no public `GitHub` release at all. The plugin resolves its changelog from Obsidian's changelog feed rather than from a release, so a Catalyst version still arrives with somewhere to read.
 
 ## Installer
 
@@ -31,4 +31,4 @@ Press the button on [00 Start](<./00 Start.md>) again and compare the first two 
 
 ## Why the newest release is not always the answer
 
-The plugin does not take "the newest release" as the installer version, and it is worth knowing why. Obsidian publishes desktop and mobile from the same GitHub repository, so the newest release is sometimes mobile-only: version 1.13.8 shipped one file, `Obsidian-1.13.8.apk`, while the newest desktop installer was still 1.13.7. Reporting 1.13.8 as an available installer would send you looking for a download that does not exist. The plugin decides by looking at what a release actually published.
+The plugin does not take "the newest release" as the installer version, and it is worth knowing why. Obsidian publishes desktop and mobile from the same `GitHub` repository, so the newest release is sometimes mobile-only: version 1.13.8 shipped one file, `Obsidian-1.13.8.apk`, while the newest desktop installer was still 1.13.7. Reporting 1.13.8 as an available installer would send you looking for a download that does not exist. The plugin decides by looking at what a release actually published.

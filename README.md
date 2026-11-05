@@ -25,7 +25,7 @@ Turning off Obsidian's automatic updates also turns off its checking, so from th
 
 **The documentation is a demo vault.** Every feature has a note that explains what it does and why you would want it, with buttons that run a real check, read what this machine is actually running, and forget which versions you have already been told about — so you see the plugin working rather than read a description of it.
 
-**[Start reading here](<./demo-vault/00 Start.md>)** — it is plain markdown, so it works on GitHub with nothing installed.
+**[Start reading here](<./demo-vault/00 Start.md>)** — it is plain markdown, so it works on `GitHub` with nothing installed.
 
 A copy of the vault ships with every release. You can access it via any of the following:
 
@@ -50,13 +50,13 @@ Obsidian's version is three separate answers that move independently, and this p
 
 - **A status bar item** showing what is behind, or **Obsidian: up to date**. Clicking it opens a panel listing every watched stream, what is installed against what is published, and a changelog link for each. Before the first successful check it says **not checked**, which is deliberately not dressed up as "up to date".
 - **One notice per new version, ever.** A version already announced is never mentioned again — not on the next check, not after a restart.
-- **A changelog link on everything.** A version with no public GitHub release, which is the normal case for a Catalyst build, still resolves its changelog from Obsidian's changelog feed.
+- **A changelog link on everything.** A version with no public `GitHub` release, which is the normal case for a Catalyst build, still resolves its changelog from Obsidian's changelog feed.
 - **An Electron warning** when the bundled version is below `28.2.3`, the floor Obsidian itself checks, with the download link built the same way Obsidian's own recommendation builds it.
 - **Both ways to take an update, on the notice and in the panel.** *Update with new installer (recommended)* links the download page for your operating system and architecture; beside it, `Settings → General → Check for updates` names the route that replaces the app bundle alone and leaves the installer where it is. It is a path rather than a button on purpose — Obsidian's own button is wired to an internal updater a plugin could only press by matching translated text in the DOM. On mobile there is one route instead, *Update Obsidian*: there is no installer to replace, and that settings path is the desktop About tab.
-- **A license-aware Catalyst row.** An insider build you cannot install is not a dead end: the panel says what is needed and links Obsidian's early-access page. It never claims you have no Catalyst — Obsidian exposes no way to read that, only whether the insider setting is on. What it names differs by platform, because the channel is reached differently: on desktop, the insider toggle in `Settings → General`; on mobile, where there is no such tab and no toggle, the insider Discord channels a Catalyst license opens.
+- **A license-aware Catalyst row.** An insider build you cannot install is not a dead end: the panel says what is needed and links Obsidian's early-access page. It never claims you have no Catalyst — Obsidian exposes no way to read that, only whether the insider setting is on. What it names differs by platform, because the channel is reached differently: on desktop, the insider toggle in `Settings → General`; on mobile, where there is no such tab and no toggle, the insider `Discord` channels a Catalyst license opens.
 - **A `Check for updates now` command**, for when you would rather not wait for the next scheduled check.
 
-Checks run once at startup and then hourly, matching Obsidian's own updater; the interval is configurable, and `0` leaves only the command. A check makes four requests, one of which reaches GitHub's API — so an hourly check uses one of its sixty per hour. A failed check is silent and keeps the last answer it had, rather than reporting "up to date" when it means "could not tell".
+Checks run once at startup and then hourly, matching Obsidian's own updater; the interval is configurable, and `0` leaves only the command. A check makes four requests, one of which reaches `GitHub`'s API — so an hourly check uses one of its sixty per hour. A failed check is silent and keeps the last answer it had, rather than reporting "up to date" when it means "could not tell".
 
 ## See also
 

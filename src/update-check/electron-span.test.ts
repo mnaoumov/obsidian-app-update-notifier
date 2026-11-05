@@ -64,10 +64,10 @@ describe('resolveElectronSpan', () => {
   });
 
   describe('when the span is too long to list', () => {
-    const LONG_SPAN_VERSIONS = createVersions(30, 40);
+    const LONG_SPAN_VERSIONS = createVersions(40);
 
     it('should keep every version while the span is within the cap', () => {
-      const span = resolveElectronSpan('30.0.0', '30.0.19', createVersions(30, 31));
+      const span = resolveElectronSpan('30.0.0', '30.0.19', createVersions(31));
       expect(span.listedVersions).toHaveLength(MAX_LISTED_ELECTRON_RELEASES - 1);
       expect(span.omittedCount).toBe(0);
     });
@@ -94,10 +94,12 @@ describe('resolveElectronSpan', () => {
   });
 });
 
-function createVersions(firstMajor: number, lastMajor: number): string[] {
+const FIRST_MAJOR_VERSION = 30;
+
+function createVersions(lastMajor: number): string[] {
   const versions: string[] = [];
 
-  for (let majorVersion = firstMajor; majorVersion <= lastMajor; majorVersion++) {
+  for (let majorVersion = FIRST_MAJOR_VERSION; majorVersion <= lastMajor; majorVersion++) {
     for (let patchVersion = 0; patchVersion < 20; patchVersion++) {
       versions.push(`${majorVersion.toString()}.0.${patchVersion.toString()}`);
     }

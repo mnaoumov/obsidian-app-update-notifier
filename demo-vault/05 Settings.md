@@ -5,7 +5,7 @@ Every setting the plugin owns, by the key it is stored under in `data.json`, gro
 ## Checking
 
 - `checkIntervalInMinutes`
-  - how often to check, in minutes. Defaults to `60`, which is what Obsidian's own updater uses. `0` switches scheduled checks off and leaves only the command. Anything else must be a whole number of at least `15`, which keeps three requests per check comfortably inside GitHub's limit of sixty an hour.
+  - how often to check, in minutes. Defaults to `60`, which is what Obsidian's own updater uses. `0` switches scheduled checks off and leaves only the command. Anything else must be a whole number of at least `15`, which keeps three requests per check comfortably inside `GitHub`'s limit of sixty an hour.
 
 ## Streams
 
