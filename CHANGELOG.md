@@ -2,84 +2,86 @@
 
 ## 1.1.0
 
-- docs(readme): point bug reports at the Report a bug command
-- feat: add a Report a bug command
-- docs: add issue-filing instructions for AI agents
-- chore(github): give the bug form the field ids bug-report links prefill
-- build(deps): override re2js to ^2.9.1 for GHSA-gg6h-894w-4m9c
-- build(deps): bump `typescript-dev-toolkit` to ^5.2.0
-- build(deps): bump @mnaoumov/typescript-dev-toolkit to ^5.1.0
-- chore(deps): update vulnerable development dependencies
-- chore: adopt keyword identifier lint rule
-- refactor: adopt readonly interface members
-- docs(readme): combine related resources and plugin comparisons
-- refactor: group src by subject into settings, sources, update-check and display
-- docs: add a Similar plugins section to the README
+This release has 1 new feature and 4 documentation changes. 8 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### New
+
+- add a Report a bug command
+
+### Documentation
+
+- **readme:** point bug reports at the Report a bug command
+- add issue-filing instructions for AI agents
+- **readme:** combine related resources and plugin comparisons
+- add a Similar plugins section to the README
 
 ## 1.0.5
 
-- chore(deps): move to @mnaoumov/obsidian-lib 6
-- docs: shorten the debugging section
-- chore: replace leftover `obsidian-dev-utils` references with @mnaoumov/obsidian-lib
-- docs(readme): lead the Debugging section with `Advanced Debug Mode`
-- build(deps): float brace-expansion, sharp and fast-uri past their advisories
-- docs: mark plugin names as code
-- chore(github): point questions to Discussions from the new-issue page
-- ci: merge attesting release assets through the toolkit's reusable workflow
+This release has 3 documentation changes. 5 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### Documentation
+
+- shorten the debugging section
+- **readme:** lead the Debugging section with `Advanced Debug Mode`
+- mark plugin names as code
 
 ## 1.0.4
 
-- build: merge moving off `obsidian-dev-utils` onto the @mnaoumov packages
-- docs: mark plugin names as code in comments
-- refactor: merge reading Platform versions and IPC toggles through `obsidian-typings`
-- test: merge using the `obsidian-typings` declarations of Obsidian internals
+This release has 1 documentation change. 3 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### Documentation
+
+- mark plugin names as code in comments
 
 ## 1.0.3
 
-- test(screenshots): merge the dark theme set through applyObsidianTheme
-- test(screenshots): merge desktop frame 1 re-shot without the search caret
-- docs(screenshots): merge the three frames re-shot under the opaque band
-- test(screenshots): merge the first-check wait before the settings-panel shot
-- test(screenshots): merge the shortened captions that overflowed their frames
-- chore(deps): merge the `obsidian-integration-testing` 17 float
-- chore(deps): merge the `obsidian-test-mocks` 7.0.0 raise
-- fix(test): merge the headless demo-vault toolkit install
-- fix(deps): restore the lockfile's missing resolved and integrity fields
-- docs(release-streams): record that Obsidian ships one Catalyst version line
-- fix(mobile): name a Catalyst route a phone has, not the desktop About tab
-- test(screenshots): drop the settings-popout workaround the harness now owns
-- fix(mobile): offer one update route instead of two desktop-only ones
-- fix(test): pin the capture run's Obsidian so shot 2 cannot silently degrade
-- build(`markdownlint`): forbid hard-wrapped markdown paragraphs
-- chore(deps): drop the dead type-fest override
-- chore(deps): drop the dead markdown-it override
-- chore(deps): drop the dead js-yaml override
-- style(comments): stop capitalizing the middle of a wrapped comment
-- docs: replace the private rule-id citations with what they assert
-- docs: name the library and the sibling plugins so a reader can resolve them
-- docs: replace the private tracker references with what they pointed at
-- chore(deps): move to `obsidian-dev-utils` 103
-- chore: adopt the `npm run gate` branch gate
-- docs: say where the debug command is run
-- docs: name the unversioned demo-vault asset and the folder it unzips into
-- chore: make the LICENSE copyright line checkable by the linter and guard it against the year roll-over
-- test(test-mocks): drop the hand-rolled app.plugins stub, and sweep the dependencies
-- fix(test): capture the settings shot in the main window, not a popout
-- test: land the pollInObsidian conversion for the real-feed suites
-- fix(build): wire build:compile to buildCompile and drop the duplicate leaf script
+This release has 7 fixes and 7 documentation changes. 17 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### Fixed
+
+- **test:** merge the headless demo-vault toolkit install
+- **deps:** restore the lockfile's missing resolved and integrity fields
+- **mobile:** name a Catalyst route a phone has, not the desktop About tab
+- **mobile:** offer one update route instead of two desktop-only ones
+- **test:** pin the capture run's Obsidian so shot 2 cannot silently degrade
+- **test:** capture the settings shot in the main window, not a popout
+- **build:** wire build:compile to buildCompile and drop the duplicate leaf script
+
+### Documentation
+
+- **screenshots:** merge the three frames re-shot under the opaque band
+- **release-streams:** record that Obsidian ships one Catalyst version line
+- replace the private rule-id citations with what they assert
+- name the library and the sibling plugins so a reader can resolve them
+- replace the private tracker references with what they pointed at
+- say where the debug command is run
+- name the unversioned demo-vault asset and the folder it unzips into
 
 ## 1.0.2
 
-- chore(deps): sweep caret-ranged dependencies to latest
-- fix(deps): move to `obsidian-integration-testing` 11 and `obsidian-dev-utils` 96.5.2
-- fix(deps): drop the brace-expansion file: override that breaks a clean install
-- docs: point installation at the published community listing
+This release has 2 fixes and 1 documentation change. 1 maintenance commit (tests, build, CI, refactoring, dependencies) is not listed.
+
+### Fixed
+
+- **deps:** move to `obsidian-integration-testing` 11 and `obsidian-dev-utils` 96.5.2
+- **deps:** drop the brace-expansion file: override that breaks a clean install
+
+### Documentation
+
+- point installation at the published community listing
 
 ## 1.0.1
 
-- docs: update changelog
-- fix(manifest): reword the description the directory rejects for naming Obsidian
-- docs: link the changelog now that 1.0.0 exists
+This release has 1 fix and 2 documentation changes.
+
+### Fixed
+
+- **manifest:** reword the description the directory rejects for naming Obsidian
+
+### Documentation
+
+- update changelog
+- link the changelog now that 1.0.0 exists
 
 ## 1.0.0
 
