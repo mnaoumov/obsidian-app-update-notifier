@@ -29,7 +29,7 @@ There is no in-app path to a newer installer. You download the current one from 
 ---
 caption: Check for updates now
 ---
-require('/demoSetup.ts').checkForUpdatesNow(app);
+require('/demoSetup.ts').runUpdateCheckNow(app);
 ```
 
 If the Installer row says an update is available, it now offers **Update with new installer (recommended)** — a link built the same way Obsidian's own recommendation builds it, carrying the operating system and architecture of the machine you are on, so you land on the right installer rather than picking one.

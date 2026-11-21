@@ -23,7 +23,7 @@ Turn automatic updates off in **Settings -> General**, then run a check:
 ---
 caption: Check for updates now
 ---
-require('/demoSetup.ts').checkForUpdatesNow(app);
+require('/demoSetup.ts').runUpdateCheckNow(app);
 ```
 
 The panel is exactly as complete as it was before. Nothing about the plugin's answer depends on Obsidian's setting.

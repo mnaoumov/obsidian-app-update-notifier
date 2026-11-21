@@ -62,7 +62,7 @@ await require('/demoSetup.ts').forgetAnnouncedVersions(app);
 ---
 caption: Now check again
 ---
-require('/demoSetup.ts').checkForUpdatesNow(app);
+require('/demoSetup.ts').runUpdateCheckNow(app);
 ```
 
 If anything is behind, you get the notices again. Press the check button a second time without forgetting first, and you get none — which is the actual feature.

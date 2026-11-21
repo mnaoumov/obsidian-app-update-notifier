@@ -8,7 +8,7 @@ Run a check and read the panel while you read this page:
 ---
 caption: Check for updates now
 ---
-require('/demoSetup.ts').checkForUpdatesNow(app);
+require('/demoSetup.ts').runUpdateCheckNow(app);
 ```
 
 ## App
