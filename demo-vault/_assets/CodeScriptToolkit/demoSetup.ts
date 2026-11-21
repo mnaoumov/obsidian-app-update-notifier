@@ -7,29 +7,35 @@ import {
 
 const PLUGIN_ID = 'app-update-notifier';
 
-const CHECK_COMMAND_ID = `${PLUGIN_ID}:check-for-updates`;
+const UPDATE_CHECK_COMMAND_ID = `${PLUGIN_ID}:check-for-updates`;
+
+const DEFAULT_CHECK_INTERVAL_IN_MINUTES = 60;
 
 interface DemoSettingsPatch {
-  betaStreamMode?: string;
-  checkIntervalInMinutes?: number;
-  notifiedVersions?: Record<string, string>;
-  shouldShowStatusBarItem?: boolean;
-  shouldWatchInstallerStream?: boolean;
+  readonly betaStreamMode?: string;
+  readonly checkIntervalInMinutes?: number;
+  readonly notifiedVersions?: Readonly<Record<string, string>>;
+  readonly shouldShowStatusBarItem?: boolean;
+  readonly shouldWatchInstallerStream?: boolean;
 }
 
 interface EditableSettingsComponent {
-  editAndSave(editor: (settings: DemoSettingsPatch) => void): Promise<void>;
+  readonly editAndSave: (editor: (settings: DemoSettingsPatch) => void) => Promise<void>;
 }
 
 interface PlatformVersions {
-  build: string;
-  version: string;
+  readonly build: string;
+  readonly version: string;
+}
+
+interface PluginWithSettingsComponent {
+  readonly pluginSettingsComponent?: EditableSettingsComponent;
 }
 
 /**
  * Applies a settings patch, live, through the plugin's own settings component.
  *
- * Manual equivalent: change the same option in **Settings -> Community plugins -> App Update Notifier**.
+ * Manual equivalent: change the same option in **Settings -> Community plugins -> `App Update Notifier`**.
  *
  * @param app - The Obsidian app.
  * @param patch - The settings to change.
@@ -37,17 +43,6 @@ interface PlatformVersions {
 export async function changeSettings(app: App, patch: DemoSettingsPatch): Promise<void> {
   await editSettings(app, patch);
   new Notice('Applied.');
-}
-
-/**
- * Runs a check now and opens the details, exactly as the command palette does.
- *
- * Manual equivalent: run the **App Update Notifier: Check for updates now** command.
- *
- * @param app - The Obsidian app.
- */
-export function checkForUpdatesNow(app: App): void {
-  app.commands.executeCommandById(CHECK_COMMAND_ID);
 }
 
 /**
@@ -81,10 +76,21 @@ export async function forgetAnnouncedVersions(app: App): Promise<void> {
 export async function restoreDefaults(app: App): Promise<void> {
   await changeSettings(app, {
     betaStreamMode: 'auto',
-    checkIntervalInMinutes: 60,
+    checkIntervalInMinutes: DEFAULT_CHECK_INTERVAL_IN_MINUTES,
     shouldShowStatusBarItem: true,
     shouldWatchInstallerStream: true
   });
+}
+
+/**
+ * Runs a check now and opens the details, exactly as the command palette does.
+ *
+ * Manual equivalent: run the **`App Update Notifier`: Check for updates now** command.
+ *
+ * @param app - The Obsidian app.
+ */
+export function runUpdateCheckNow(app: App): void {
+  app.commands.executeCommandById(UPDATE_CHECK_COMMAND_ID);
 }
 
 /**
@@ -122,7 +128,7 @@ function describeAutoUpdate(): string {
  * same live `editAndSave` the library helper used, and what the settings tab itself calls.
  */
 async function editSettings(app: App, patch: DemoSettingsPatch): Promise<void> {
-  const plugin = app.plugins.getPlugin(PLUGIN_ID) as null | { pluginSettingsComponent?: EditableSettingsComponent };
+  const plugin = app.plugins.getPlugin(PLUGIN_ID) as null | PluginWithSettingsComponent;
   const settingsComponent = plugin?.pluginSettingsComponent;
   if (!settingsComponent) {
     throw new Error(`Plugin '${PLUGIN_ID}' is not enabled.`);

@@ -19,7 +19,7 @@ Now ask the plugin what it has found:
 ---
 caption: Check for updates now
 ---
-require('/demoSetup.ts').checkForUpdatesNow(app);
+require('/demoSetup.ts').runUpdateCheckNow(app);
 ```
 
 That runs a real check and opens the details panel. It is the same thing the **`App Update Notifier`: Check for updates now** command does, and the same panel you get by clicking the plugin's status bar item.
