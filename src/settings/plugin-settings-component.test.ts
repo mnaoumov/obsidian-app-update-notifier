@@ -112,6 +112,23 @@ describe('the check-interval validator', () => {
   });
 });
 
+describe('the release-wait validator', () => {
+  it.each([
+    [0, true],
+    [1, true],
+    [14, true],
+    [2, true],
+    [-1, false],
+    [0.5, false]
+  ])('should accept %s: %s', async (value: number, isAccepted: boolean) => {
+    const component = await createLoadedComponent();
+
+    const message = await component.setProperty('releaseWaitInDays', value);
+
+    expect(message === '').toBe(isAccepted);
+  });
+});
+
 function createComponent(): PluginSettingsComponent {
   return new PluginSettingsComponent({
     dataHandler: createInMemoryDataHandler(),

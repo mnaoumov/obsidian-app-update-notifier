@@ -24,6 +24,15 @@ export enum ChangelogPlatform {
  */
 export interface ChangelogEntry {
   /**
+   * When the entry was published, as an RFC 3339 date-time (JSON Feed's `date_published`). The feed
+   * dates every entry to midnight UTC of its day, so it is a day's precision, not a minute's.
+   *
+   * Optional because JSON Feed makes it optional; an entry without it simply has no date.
+   */
+
+  readonly date_published?: string;
+
+  /**
    * The entry title, in the form `Obsidian <version> <Desktop|Mobile> (<Public|Early access>)` — e.g.
    * `Obsidian 1.13.5 Desktop (Early access)`.
    */
@@ -99,6 +108,17 @@ export interface GitHubRelease {
    * nothing else.
    */
   readonly body: string;
+
+  /**
+   * When the release was published, as an ISO 8601 date-time. GitHub sends `null` for a draft, and
+   * the field is optional so a payload without it reads as undated rather than as malformed.
+   *
+   * ⚠️ This is the PUBLIC release date. An insider (Catalyst) version gets its GitHub release only
+   * when it goes public — v1.15.1 was early access on 2026-11-03 and released on GitHub on
+   * 2026-11-12 — so the insider stream must not date itself from here.
+   */
+
+  readonly published_at?: null | string;
 
   /**
    * The tag, in the form `v1.13.7`.
@@ -190,6 +210,28 @@ export async function fetchGitHubReleases(): Promise<GitHubRelease[]> {
 }
 
 /**
+ * Resolves when a version was published, from the changelog feed.
+ *
+ * The entry is chosen exactly as {@link findChangelogUrl} chooses it, so the date and the changelog
+ * link of one stream always describe the same entry.
+ *
+ * @param entries - The changelog entries, as returned by {@link fetchChangelogEntries}.
+ * @param version - The bare version, e.g. `1.13.7`.
+ * @param platform - Which build's entry to look for.
+ * @param shouldPreferEarlyAccess - Whether to prefer the early-access (Catalyst) entry over the public one.
+ * @returns The publication time as a millisecond timestamp, or `null` when the version is not in the
+ * feed or its entry carries no readable date.
+ */
+export function findChangelogPublishedAt(
+  entries: readonly ChangelogEntry[],
+  version: string,
+  platform: ChangelogPlatform,
+  shouldPreferEarlyAccess: boolean
+): null | number {
+  return parseTimestamp(findChangelogEntry(entries, version, platform, shouldPreferEarlyAccess)?.date_published);
+}
+
+/**
  * Resolves the changelog URL for a version from the changelog feed.
  *
  * A version can have several entries — desktop and mobile, and an early-access one days before the
@@ -209,10 +251,7 @@ export function findChangelogUrl(
   platform: ChangelogPlatform,
   shouldPreferEarlyAccess: boolean
 ): string {
-  const candidates = entries.filter((entry) => entry.title.includes(` ${version} `) && entry.title.includes(` ${platform} `));
-  const preferred = candidates.find((entry) => entry.title.includes('(Early access)') === shouldPreferEarlyAccess);
-  const [firstCandidate] = candidates;
-  return (preferred ?? firstCandidate)?.url ?? CHANGELOG_INDEX_URL;
+  return findChangelogEntry(entries, version, platform, shouldPreferEarlyAccess)?.url ?? CHANGELOG_INDEX_URL;
 }
 
 /**
@@ -254,13 +293,47 @@ export function getReleaseChangelogUrl(releases: readonly GitHubRelease[], versi
   return body.startsWith(CHANGELOG_INDEX_URL) ? body : null;
 }
 
+/**
+ * Reads when a version's GitHub release was published.
+ *
+ * @param releases - The releases, newest first, as returned by {@link fetchGitHubReleases}.
+ * @param version - The bare version whose release to read.
+ * @returns The publication time as a millisecond timestamp, or `null` when the release is absent,
+ * still a draft, or carries no readable date.
+ */
+export function getReleasePublishedAt(releases: readonly GitHubRelease[], version: string): null | number {
+  const release = releases.find((candidate) => toBareVersion(candidate.tag_name) === version);
+  return parseTimestamp(release?.published_at);
+}
+
 function checkIsDesktopInstallerAsset(assetName: string): boolean {
   const lowerCasedAssetName = assetName.toLowerCase();
   return DESKTOP_INSTALLER_ASSET_EXTENSIONS.some((extension) => lowerCasedAssetName.endsWith(extension));
 }
 
+function findChangelogEntry(
+  entries: readonly ChangelogEntry[],
+  version: string,
+  platform: ChangelogPlatform,
+  shouldPreferEarlyAccess: boolean
+): ChangelogEntry | null {
+  const candidates = entries.filter((entry) => entry.title.includes(` ${version} `) && entry.title.includes(` ${platform} `));
+  const preferred = candidates.find((entry) => entry.title.includes('(Early access)') === shouldPreferEarlyAccess);
+  const [firstCandidate] = candidates;
+  return preferred ?? firstCandidate ?? null;
+}
+
 function findLatestDesktopInstallerRelease(releases: readonly GitHubRelease[]): GitHubRelease | null {
   return releases.find((release) => release.assets.some((asset) => checkIsDesktopInstallerAsset(asset.name))) ?? null;
+}
+
+function parseTimestamp(value: null | string | undefined): null | number {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const timestamp = Date.parse(value);
+  return Number.isNaN(timestamp) ? null : timestamp;
 }
 
 function toBareVersion(tagName: string): string {

@@ -26,6 +26,14 @@ import { checkIsAutoUpdateDisabled } from '../sources/platform-ex.ts';
 import { PluginSettingsTab } from './plugin-settings-tab.ts';
 import { PluginSettings } from './plugin-settings.ts';
 
+/**
+ * The converter half of the release-wait row's bind call.
+ */
+interface ReleaseWaitBindParams {
+  readonly componentToPluginSettingsValueConverter: (uiValue: string) => unknown;
+  readonly pluginSettingsToComponentValueConverter: (value: number) => unknown;
+}
+
 vi.mock('../sources/platform-ex.ts', () => ({
   checkIsAutoUpdateDisabled: vi.fn()
 }));
@@ -34,7 +42,8 @@ const EXPECTED_PROPERTY_NAMES = [
   'checkIntervalInMinutes',
   'betaStreamMode',
   'shouldWatchInstallerStream',
-  'shouldShowStatusBarItem'
+  'shouldShowStatusBarItem',
+  'releaseWaitInDays'
 ];
 
 const EXPECTED_HEADINGS = [
@@ -84,25 +93,26 @@ describe('PluginSettingsTab', () => {
   });
 
   it('should offer the three insider-stream modes', () => {
-    const tab = createTab();
-    const addedOptions: Record<string, string>[] = [];
-    const setting = new SettingEx(tab.containerEl);
-    vi.spyOn(setting, 'addDropdown').mockImplementation((callback) => {
-      callback(castTo<Parameters<typeof callback>[0]>({
-        addOptions: (options: Record<string, string>) => {
-          addedOptions.push(options);
-        }
-      }));
-      return setting;
+    expect(Object.values(renderDropdownOptions('Insider builds'))).toEqual(['Auto', 'Always', 'Never']);
+  });
+
+  it('should offer the release waits, off first', () => {
+    expect(renderDropdownOptions('Wait before announcing a release')).toEqual({
+      0: 'Do not wait',
+      1: '1 day',
+      14: '14 days',
+      3: '3 days',
+      7: '7 days'
     });
+  });
 
-    const definition = flattenRows(tab.getSettingDefinitions()).find((row) => row.name === 'Insider builds');
-    if (!definition || !('render' in definition)) {
-      throw new Error('The insider-builds row is missing.');
-    }
-    definition.render(setting, castTo<SettingGroup>(null));
+  it('should store the release wait as a number and show it as the option value', () => {
+    renderRows(createTab());
 
-    expect(Object.values(addedOptions[0] ?? {})).toEqual(['Auto', 'Always', 'Never']);
+    const call = vi.mocked(PluginSettingsTabBase.prototype.bind).mock.calls.find((candidate) => candidate[0].propertyName === 'releaseWaitInDays');
+    const params = castTo<ReleaseWaitBindParams>(call?.[0]);
+    expect(params.componentToPluginSettingsValueConverter('7')).toBe(7);
+    expect(params.pluginSettingsToComponentValueConverter(14)).toBe('14');
   });
 
   describe('the read-only automatic-updates row', () => {
@@ -190,6 +200,34 @@ function headings(tab: PluginSettingsTab): string[] {
   return tab.getSettingDefinitions()
     .filter((item) => 'items' in item)
     .map((item) => castTo<SettingDefinitionGroup>(item).heading ?? '');
+}
+
+/**
+ * Renders one dropdown row and reads the options it offers.
+ *
+ * @param name - The row name.
+ * @returns The options, value to label.
+ */
+function renderDropdownOptions(name: string): Record<string, string> {
+  const tab = createTab();
+  const addedOptions: Record<string, string>[] = [];
+  const setting = new SettingEx(tab.containerEl);
+  vi.spyOn(setting, 'addDropdown').mockImplementation((callback) => {
+    callback(castTo<Parameters<typeof callback>[0]>({
+      addOptions: (options: Record<string, string>) => {
+        addedOptions.push(options);
+      }
+    }));
+    return setting;
+  });
+
+  const definition = flattenRows(tab.getSettingDefinitions()).find((row) => row.name === name);
+  if (!definition || !('render' in definition)) {
+    throw new Error(`The ${name} row is missing.`);
+  }
+  definition.render(setting, castTo<SettingGroup>(null));
+
+  return addedOptions[0] ?? {};
 }
 
 /**

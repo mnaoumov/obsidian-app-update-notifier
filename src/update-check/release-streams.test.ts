@@ -86,7 +86,8 @@ describe('resolveAppStreamStatus', () => {
       currentVersion: '1.13.6',
       id: ReleaseStreamId.App,
       isUpdateAvailable: true,
-      latestVersion: '1.13.7'
+      latestVersion: '1.13.7',
+      publishedAtInMilliseconds: null
     });
   });
 
@@ -159,7 +160,8 @@ describe('resolveInstallerStreamStatus', () => {
       currentVersion: '1.13.4',
       id: ReleaseStreamId.Installer,
       isUpdateAvailable: true,
-      latestVersion: '1.13.7'
+      latestVersion: '1.13.7',
+      publishedAtInMilliseconds: null
     });
   });
 
@@ -182,6 +184,70 @@ describe('resolveInstallerStreamStatus', () => {
     expect(status.currentVersion).toBeNull();
     expect(status.latestVersion).toBeNull();
     expect(status.isUpdateAvailable).toBe(false);
+  });
+});
+
+describe('the release date each stream waits from', () => {
+  const EARLY_ACCESS_DATE = '2026-11-03T00:00:00Z';
+  const PUBLIC_CHANGELOG_DATE = '2026-11-12T00:00:00Z';
+  const GITHUB_RELEASE_DATE = '2026-11-12T15:43:18Z';
+
+  /**
+   * The shape of the real feeds for 1.15.1, read 2026-11-22: early access on 11-03, public on 11-12,
+   * and the GitHub release made at the public date, not the early-access one.
+   */
+  const DATED_FEEDS: ReleaseFeeds = {
+    changelogEntries: [
+      /* eslint-disable camelcase -- JSON Feed names the field `date_published`. */
+      { date_published: PUBLIC_CHANGELOG_DATE, title: 'Obsidian 1.15.1 Mobile (Public)', url: MOBILE_CHANGELOG_URL },
+      { date_published: PUBLIC_CHANGELOG_DATE, title: 'Obsidian 1.15.1 Desktop (Public)', url: DESKTOP_CHANGELOG_URL },
+      { date_published: EARLY_ACCESS_DATE, title: 'Obsidian 1.15.1 Mobile (Early access)', url: MOBILE_CHANGELOG_URL },
+      { date_published: EARLY_ACCESS_DATE, title: 'Obsidian 1.15.1 Desktop (Early access)', url: DESKTOP_EARLY_ACCESS_CHANGELOG_URL }
+      /* eslint-enable camelcase -- JSON Feed names the field `date_published`. */
+    ],
+    desktopReleases: {
+      beta: { latestVersion: '1.15.1', minimumVersion: '1.1.9' },
+      latestVersion: '1.15.1',
+      minimumVersion: '1.1.9'
+    },
+    /* eslint-disable camelcase -- GitHub names the fields `published_at` and `tag_name`. */
+    gitHubReleases: [{
+      assets: [{ name: 'Obsidian-1.15.1.exe' }, { name: 'Obsidian-1.15.1.apk' }],
+      body: DESKTOP_CHANGELOG_URL,
+      published_at: GITHUB_RELEASE_DATE,
+      tag_name: 'v1.15.1'
+    }],
+    /* eslint-enable camelcase -- GitHub names the fields `published_at` and `tag_name`. */
+    metadata: null
+  };
+
+  it('should date the app stream from its GitHub release', () => {
+    expect(resolveAppStreamStatus(DATED_FEEDS, DESKTOP).publishedAtInMilliseconds).toBe(Date.parse(GITHUB_RELEASE_DATE));
+    expect(resolveAppStreamStatus(DATED_FEEDS, ANDROID).publishedAtInMilliseconds).toBe(Date.parse(GITHUB_RELEASE_DATE));
+  });
+
+  it('should date the installer stream from its GitHub release', () => {
+    expect(resolveInstallerStreamStatus(DATED_FEEDS, DESKTOP).publishedAtInMilliseconds).toBe(Date.parse(GITHUB_RELEASE_DATE));
+  });
+
+  it('should fall back to the public changelog entry when the version has no dated GitHub release', () => {
+    const feeds: ReleaseFeeds = { ...DATED_FEEDS, gitHubReleases: [] };
+    expect(resolveAppStreamStatus(feeds, DESKTOP).publishedAtInMilliseconds).toBe(Date.parse(PUBLIC_CHANGELOG_DATE));
+  });
+
+  it('should date the insider stream from the early-access entry, never from the later GitHub release', () => {
+    expect(resolveBetaStreamStatus(DATED_FEEDS, DESKTOP).publishedAtInMilliseconds).toBe(Date.parse(EARLY_ACCESS_DATE));
+  });
+
+  it('should leave a stream undated when no feed dates its version', () => {
+    expect(resolveAppStreamStatus(FEEDS, DESKTOP).publishedAtInMilliseconds).toBeNull();
+    expect(resolveBetaStreamStatus(FEEDS, DESKTOP).publishedAtInMilliseconds).toBeNull();
+    expect(resolveInstallerStreamStatus(FEEDS, ANDROID).publishedAtInMilliseconds).toBeNull();
+  });
+
+  it('should leave the insider stream undated when the feed carries no beta channel', () => {
+    const feeds: ReleaseFeeds = { ...DATED_FEEDS, desktopReleases: { latestVersion: '1.15.1', minimumVersion: '1.1.9' } };
+    expect(resolveBetaStreamStatus(feeds, DESKTOP).publishedAtInMilliseconds).toBeNull();
   });
 });
 

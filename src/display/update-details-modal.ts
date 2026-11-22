@@ -23,12 +23,18 @@ import {
 import { getDownloadUrl } from '../sources/platform-ex.ts';
 import { resolveElectronSpan } from '../update-check/electron-span.ts';
 import { RELEASE_STREAM_LABELS } from '../update-check/release-streams.ts';
+import { getReleaseWaitEndInMilliseconds } from '../update-check/release-wait.ts';
 import { appendUpdateActions } from './update-actions.ts';
 
 /**
  * Parameters for {@link showUpdateDetails}.
  */
 export interface ShowUpdateDetailsParams extends ModalParamsBase {
+  /**
+   * The release wait set, in days. A release inside it is still listed, marked as waiting.
+   */
+  readonly releaseWaitInDays: number;
+
   /**
    * The last successful check, or `null` when none has succeeded yet.
    */
@@ -53,11 +59,13 @@ class UpdateDetailsModal extends ModalBase<void> {
    * is exactly what makes it worth guarding explicitly.
    */
   private isClosed = false;
+  private readonly releaseWaitInDays: number;
   private readonly result: null | UpdateCheckResult;
 
   public constructor(params: UpdateDetailsModalConstructorParams) {
     super(params);
     this.addCssClasses('app-update-notifier-details-modal');
+    this.releaseWaitInDays = params.releaseWaitInDays;
     this.result = params.result;
   }
 
@@ -172,6 +180,15 @@ class UpdateDetailsModal extends ModalBase<void> {
     line.appendText(`Latest: ${status.latestVersion ?? 'unknown'}`);
     line.createEl('br');
     line.appendText(describeStatus(status));
+
+    const waitEnd = getReleaseWaitEndInMilliseconds(status, this.releaseWaitInDays);
+    if (waitEnd !== null && Date.now() < waitEnd) {
+      line.createEl('br');
+      line.createSpan({
+        cls: 'app-update-notifier-release-wait',
+        text: `Waiting until ${new Date(waitEnd).toLocaleDateString()} before announcing it, as your release wait setting asks.`
+      });
+    }
 
     const changelogLine = container.createEl('p');
     changelogLine.createEl('a', {

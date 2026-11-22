@@ -27,10 +27,12 @@ import {
 import {
   CHANGELOG_INDEX_URL,
   ChangelogPlatform,
+  findChangelogPublishedAt,
   findChangelogUrl,
   findLatestAndroidVersion,
   findLatestDesktopInstallerVersion,
-  getReleaseChangelogUrl
+  getReleaseChangelogUrl,
+  getReleasePublishedAt
 } from '../sources/obsidian-releases-api.ts';
 
 /**
@@ -177,6 +179,16 @@ export interface ReleaseStreamStatus {
    * The newest version published on this stream, or `null` when it could not be resolved.
    */
   readonly latestVersion: null | string;
+
+  /**
+   * When {@link ReleaseStreamStatus.latestVersion} was published ON THIS STREAM, as a millisecond
+   * timestamp, or `null` when no feed dates it. The release wait (see `release-wait.ts`) counts from
+   * here.
+   *
+   * ⚠️ Per stream, not per version: `1.15.1` reached the insider stream on 2026-11-03 and the app
+   * stream on 2026-11-12, and each stream waits from its own date.
+   */
+  readonly publishedAtInMilliseconds: null | number;
 }
 
 /**
@@ -235,7 +247,8 @@ export function resolveAppStreamStatus(feeds: ReleaseFeeds, platform: PlatformSn
     currentVersion: platform.appVersion,
     id: ReleaseStreamId.App,
     isUpdateAvailable: checkIsOlder(platform.appVersion, latestVersion),
-    latestVersion
+    latestVersion,
+    publishedAtInMilliseconds: resolvePublicReleaseDate(feeds, latestVersion, changelogPlatform)
   };
 }
 
@@ -282,7 +295,10 @@ export function resolveBetaStreamStatus(feeds: ReleaseFeeds, platform: PlatformS
     currentVersion: platform.appVersion,
     id: ReleaseStreamId.Beta,
     isUpdateAvailable: checkIsOlder(platform.appVersion, latestVersion),
-    latestVersion
+    latestVersion,
+    // The early-access entry only. The GitHub release of the same version appears when it goes
+    // PUBLIC, days or weeks later, so dating the insider stream from it would wait for nothing.
+    publishedAtInMilliseconds: latestVersion === null ? null : findChangelogPublishedAt(feeds.changelogEntries, latestVersion, changelogPlatform, true)
   };
 }
 
@@ -332,7 +348,8 @@ export function resolveInstallerStreamStatus(feeds: ReleaseFeeds, platform: Plat
     currentVersion: platform.installerVersion,
     id: ReleaseStreamId.Installer,
     isUpdateAvailable: checkIsOlder(platform.installerVersion, latestVersion),
-    latestVersion
+    latestVersion,
+    publishedAtInMilliseconds: resolvePublicReleaseDate(feeds, latestVersion, ChangelogPlatform.Desktop)
   };
 }
 
@@ -350,4 +367,19 @@ function resolveChangelogUrl(
     ? CHANGELOG_INDEX_URL
     : getMetadataChangelogUrl(feeds.metadata, version, platform, shouldPreferEarlyAccess)
       ?? findChangelogUrl(feeds.changelogEntries, version, platform, shouldPreferEarlyAccess);
+}
+
+/**
+ * Dates a PUBLIC release: its GitHub release first, to the minute, then the changelog's public entry,
+ * to the day.
+ *
+ * @param feeds - The fetched feeds.
+ * @param version - The version to date, or `null`.
+ * @param platform - Which build's changelog entry to fall back to.
+ * @returns The publication time, or `null` when neither feed dates it.
+ */
+function resolvePublicReleaseDate(feeds: ReleaseFeeds, version: null | string, platform: ChangelogPlatform): null | number {
+  return version === null
+    ? null
+    : getReleasePublishedAt(feeds.gitHubReleases, version) ?? findChangelogPublishedAt(feeds.changelogEntries, version, platform, false);
 }

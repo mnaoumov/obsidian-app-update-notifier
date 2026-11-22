@@ -68,6 +68,7 @@ vi.mock('../sources/platform-ex.ts', () => ({
 }));
 
 const DESKTOP_CHANGELOG_URL = 'https://obsidian.md/changelog/2026-08-12-desktop-v1.13.7/';
+const MILLISECONDS_PER_DAY = 86_400_000;
 
 const platform = castTo<MutablePlatform>(Platform);
 const showNotice = vi.fn();
@@ -211,6 +212,47 @@ describe('notifications', () => {
 
     expect(showNotice).not.toHaveBeenCalled();
     expect(recordNotified).not.toHaveBeenCalled();
+  });
+
+  describe('with a release wait set', () => {
+    const PUBLISHED_AT = '2026-11-12T15:43:18Z';
+
+    beforeEach(() => {
+      settings.releaseWaitInDays = 3;
+      vi.mocked(fetchGitHubReleases).mockResolvedValue([{
+        assets: [{ name: 'Obsidian-1.13.7.exe' }],
+        body: DESKTOP_CHANGELOG_URL,
+        /* eslint-disable camelcase -- GitHub names the fields `published_at` and `tag_name`. */
+        published_at: PUBLISHED_AT,
+        tag_name: 'v1.13.7'
+        /* eslint-enable camelcase -- GitHub names the fields `published_at` and `tag_name`. */
+      }]);
+    });
+
+    it('should hold a release back, unrecorded, while it is inside the wait', async () => {
+      vi.setSystemTime(Date.parse(PUBLISHED_AT) + MILLISECONDS_PER_DAY);
+      const component = createComponent();
+
+      await component.check();
+
+      expect(showNotice).not.toHaveBeenCalled();
+      expect(recordNotified).not.toHaveBeenCalled();
+      // The check still knows about it: the details panel lists a held release.
+      expect(component.lastResult?.statuses.every((status) => status.isUpdateAvailable)).toBe(true);
+    });
+
+    it('should announce it at the first check after the wait ends', async () => {
+      vi.setSystemTime(Date.parse(PUBLISHED_AT) + 3 * MILLISECONDS_PER_DAY);
+
+      await createComponent().check();
+
+      expect(showNotice).toHaveBeenCalledTimes(2);
+      expect(recordNotified).toHaveBeenCalledWith(ReleaseStreamId.App, '1.13.7');
+    });
+
+    it('should expose the wait it reads, so the details panel shows the same one', () => {
+      expect(createComponent().releaseWaitInDays).toBe(3);
+    });
   });
 
   it('should say nothing when nothing is out of date', async () => {

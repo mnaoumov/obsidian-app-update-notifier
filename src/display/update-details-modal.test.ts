@@ -67,6 +67,8 @@ const ELECTRON: ElectronStatus = {
   targetVersion: null
 };
 
+const MILLISECONDS_PER_DAY = 86_400_000;
+
 const promiseResolve = vi.fn();
 
 let app: AppOriginal;
@@ -91,6 +93,29 @@ describe('when no check has succeeded', () => {
   it('should say so rather than show an empty panel', async () => {
     const contentEl = await render(null);
     expect(contentEl.textContent).toContain('No check has succeeded yet');
+  });
+});
+
+describe('when a release is inside the release wait', () => {
+  it('should still list it as an update, marked as waiting with the date the wait ends', async () => {
+    const publishedAt = Date.now() - MILLISECONDS_PER_DAY;
+    const contentEl = await render(createResult([createStatus(ReleaseStreamId.App, true, publishedAt)]), 3);
+
+    expect(contentEl.textContent).toContain('An update is available.');
+    const waitEl = contentEl.querySelector('.app-update-notifier-release-wait');
+    expect(waitEl?.textContent).toBe(`Waiting until ${new Date(publishedAt + 3 * MILLISECONDS_PER_DAY).toLocaleDateString()} before announcing it, as your release wait setting asks.`);
+  });
+
+  it('should drop the mark once the wait has passed', async () => {
+    const contentEl = await render(createResult([createStatus(ReleaseStreamId.App, true, Date.now() - 4 * MILLISECONDS_PER_DAY)]), 3);
+
+    expect(contentEl.querySelector('.app-update-notifier-release-wait')).toBeNull();
+  });
+
+  it('should not mark anything while the wait is off', async () => {
+    const contentEl = await render(createResult([createStatus(ReleaseStreamId.App, true, Date.now())]));
+
+    expect(contentEl.querySelector('.app-update-notifier-release-wait')).toBeNull();
   });
 });
 
@@ -361,18 +386,19 @@ function createResult(
   };
 }
 
-function createStatus(id: ReleaseStreamId, isUpdateAvailable: boolean): ReleaseStreamStatus {
+function createStatus(id: ReleaseStreamId, isUpdateAvailable: boolean, publishedAtInMilliseconds: null | number = null): ReleaseStreamStatus {
   return {
     changelogUrl: 'https://obsidian.md/changelog/2026-08-12-desktop-v1.13.7/',
     currentVersion: '1.13.6',
     id,
     isUpdateAvailable,
-    latestVersion: '1.13.7'
+    latestVersion: '1.13.7',
+    publishedAtInMilliseconds
   };
 }
 
-async function render(result: null | UpdateCheckResult): Promise<HTMLElement> {
-  await showUpdateDetails({ app, result });
+async function render(result: null | UpdateCheckResult, releaseWaitInDays = 0): Promise<HTMLElement> {
+  await showUpdateDetails({ app, releaseWaitInDays, result });
   if (!openedModal) {
     throw new Error('The modal was never created.');
   }
