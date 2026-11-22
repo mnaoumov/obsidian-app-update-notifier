@@ -15,6 +15,7 @@ interface DemoSettingsPatch {
   readonly betaStreamMode?: string;
   readonly checkIntervalInMinutes?: number;
   readonly notifiedVersions?: Readonly<Record<string, string>>;
+  readonly releaseWaitInDays?: number;
   readonly shouldShowStatusBarItem?: boolean;
   readonly shouldWatchInstallerStream?: boolean;
 }
@@ -77,6 +78,7 @@ export async function restoreDefaults(app: App): Promise<void> {
   await changeSettings(app, {
     betaStreamMode: 'auto',
     checkIntervalInMinutes: DEFAULT_CHECK_INTERVAL_IN_MINUTES,
+    releaseWaitInDays: 0,
     shouldShowStatusBarItem: true,
     shouldWatchInstallerStream: true
   });

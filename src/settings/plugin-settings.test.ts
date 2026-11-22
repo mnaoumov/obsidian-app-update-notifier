@@ -30,6 +30,10 @@ describe('PluginSettings', () => {
       expect(new PluginSettings().shouldShowStatusBarItem).toBe(true);
     });
 
+    it('should announce a release at once, with no wait', () => {
+      expect(new PluginSettings().releaseWaitInDays).toBe(0);
+    });
+
     it('should start with nothing announced, one slot per stream', () => {
       expect(new PluginSettings().notifiedVersions).toEqual({
         [ReleaseStreamId.App]: '',

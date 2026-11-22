@@ -23,10 +23,12 @@ import {
   fetchChangelogEntries,
   fetchDesktopReleases,
   fetchGitHubReleases,
+  findChangelogPublishedAt,
   findChangelogUrl,
   findLatestAndroidVersion,
   findLatestDesktopInstallerVersion,
   getReleaseChangelogUrl,
+  getReleasePublishedAt,
   GITHUB_RELEASES_URL
 } from './obsidian-releases-api.ts';
 
@@ -153,6 +155,50 @@ describe('findChangelogUrl', () => {
 
   it('should fall back to the changelog index for a version the feed does not carry', () => {
     expect(findChangelogUrl(CHANGELOG_ENTRIES, '9.9.9', ChangelogPlatform.Desktop, false)).toBe(CHANGELOG_INDEX_URL);
+  });
+});
+
+describe('getReleasePublishedAt', () => {
+  it('should read the publication time of the version\'s release', () => {
+    // eslint-disable-next-line camelcase -- GitHub names the field `published_at`.
+    const releases = [{ ...createRelease('v1.15.1', ['Obsidian-1.15.1.exe']), published_at: '2026-11-12T15:43:18Z' }];
+    expect(getReleasePublishedAt(releases, '1.15.1')).toBe(Date.parse('2026-11-12T15:43:18Z'));
+  });
+
+  it.each([
+    ['a draft', null],
+    ['an unreadable date', 'not a date']
+  ])('should return null for %s', (_description: string, publishedAt: null | string) => {
+    // eslint-disable-next-line camelcase -- GitHub names the field `published_at`.
+    const releases = [{ ...createRelease('v1.15.1', ['Obsidian-1.15.1.exe']), published_at: publishedAt }];
+    expect(getReleasePublishedAt(releases, '1.15.1')).toBeNull();
+  });
+
+  it('should return null for a payload without the field', () => {
+    expect(getReleasePublishedAt([createRelease('v1.15.1', ['Obsidian-1.15.1.exe'])], '1.15.1')).toBeNull();
+  });
+
+  it('should return null for a version with no release', () => {
+    expect(getReleasePublishedAt(RELEASES, '1.13.5')).toBeNull();
+  });
+});
+
+describe('findChangelogPublishedAt', () => {
+  const DATED_ENTRIES: readonly ChangelogEntry[] = [
+    // eslint-disable-next-line camelcase -- JSON Feed names the field `date_published`.
+    { ...createChangelogEntry('Obsidian 1.15.1 Desktop (Public)', 'https://obsidian.md/changelog/2026-11-12-desktop-v1.15.1/'), date_published: '2026-11-12T00:00:00Z' },
+    // eslint-disable-next-line camelcase -- JSON Feed names the field `date_published`.
+    { ...createChangelogEntry('Obsidian 1.15.1 Desktop (Early access)', 'https://obsidian.md/changelog/2026-11-03-desktop-v1.15.1/'), date_published: '2026-11-03T00:00:00Z' }
+  ];
+
+  it('should date the same entry the changelog link is read from', () => {
+    expect(findChangelogPublishedAt(DATED_ENTRIES, '1.15.1', ChangelogPlatform.Desktop, false)).toBe(Date.parse('2026-11-12T00:00:00Z'));
+    expect(findChangelogPublishedAt(DATED_ENTRIES, '1.15.1', ChangelogPlatform.Desktop, true)).toBe(Date.parse('2026-11-03T00:00:00Z'));
+  });
+
+  it('should return null for an undated entry or a version the feed does not carry', () => {
+    expect(findChangelogPublishedAt(CHANGELOG_ENTRIES, '1.13.7', ChangelogPlatform.Desktop, false)).toBeNull();
+    expect(findChangelogPublishedAt(DATED_ENTRIES, '9.9.9', ChangelogPlatform.Desktop, false)).toBeNull();
   });
 });
 

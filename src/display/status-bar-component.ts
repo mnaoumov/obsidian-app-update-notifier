@@ -7,6 +7,7 @@ import { invokeAsyncSafely } from '@mnaoumov/typescript-lib/async';
 import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 import type { UpdateCheckerComponent } from '../update-check/update-checker-component.ts';
 
+import { checkIsReleaseHeld } from '../update-check/release-wait.ts';
 import { showUpdateDetails } from './update-details-modal.ts';
 
 interface StatusBarComponentConstructorParams {
@@ -42,6 +43,7 @@ export class StatusBarComponent extends ComponentEx {
       invokeAsyncSafely(async () => {
         await showUpdateDetails({
           app: this.app,
+          releaseWaitInDays: this.pluginSettingsComponent.settings.releaseWaitInDays,
           result: this.updateCheckerComponent.lastResult
         });
       });
@@ -72,9 +74,15 @@ export class StatusBarComponent extends ComponentEx {
       return;
     }
 
-    const updateCount = result?.statuses.filter((status) => status.isUpdateAvailable).length ?? 0;
+    // A release inside its wait is not counted, so the count moves when the notice does. The tooltip
+    // still says it exists, because the panel the click opens lists it.
+    const releaseWaitInDays = this.pluginSettingsComponent.settings.releaseWaitInDays;
+    const nowInMilliseconds = Date.now();
+    const availableStatuses = result?.statuses.filter((status) => status.isUpdateAvailable) ?? [];
+    const heldCount = availableStatuses.filter((status) => checkIsReleaseHeld(status, releaseWaitInDays, nowInMilliseconds)).length;
+    const updateCount = availableStatuses.length - heldCount;
     statusBarItemEl.setText(buildText(result === null, updateCount));
-    statusBarItemEl.setAttr('aria-label', buildTooltip(result === null, updateCount));
+    statusBarItemEl.setAttr('aria-label', buildTooltip(result === null, updateCount, heldCount));
     statusBarItemEl.toggleClass('mod-warning', updateCount > 0);
   }
 }
@@ -91,9 +99,14 @@ function buildText(hasNoResult: boolean, updateCount: number): string {
   return `Obsidian: ${String(updateCount)} update${updateCount === 1 ? '' : 's'}`;
 }
 
-function buildTooltip(hasNoResult: boolean, updateCount: number): string {
+function buildTooltip(hasNoResult: boolean, updateCount: number, heldCount: number): string {
   if (hasNoResult) {
     return 'No update check has succeeded yet. Click for details.';
+  }
+
+  if (heldCount > 0) {
+    const heldText = heldCount === 1 ? '1 new release is' : `${String(heldCount)} new releases are`;
+    return `${heldText} still inside the wait you set. Click for details.`;
   }
 
   return updateCount === 0 ? 'Every watched Obsidian release stream is up to date. Click for details.' : 'Click for the versions and their changelogs.';

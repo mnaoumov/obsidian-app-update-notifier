@@ -38,6 +38,13 @@ export const DEFAULT_CHECK_INTERVAL_IN_MINUTES = 60;
  */
 export const MIN_CHECK_INTERVAL_IN_MINUTES = 15;
 
+/**
+ * The waits the settings tab offers, in days. `0` is off. Any other whole number of days is still
+ * honoured when written to `data.json` by hand.
+ */
+// eslint-disable-next-line no-magic-numbers -- The list IS the set of named choices; naming each number would only repeat it.
+export const RELEASE_WAIT_OPTIONS_IN_DAYS: readonly number[] = [0, 1, 3, 7, 14];
+
 export class PluginSettings {
   /**
    * When to watch the insider (Catalyst) stream.
@@ -61,6 +68,13 @@ export class PluginSettings {
     [ReleaseStreamId.Beta]: '',
     [ReleaseStreamId.Installer]: ''
   };
+
+  /**
+   * How many days a new release must have been public on its stream before it is announced or counted
+   * in the status bar. `0` (the default) announces it at once. The details panel lists a held release
+   * either way.
+   */
+  public releaseWaitInDays = 0;
 
   /**
    * Whether the status bar carries an item showing what is out of date.

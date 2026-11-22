@@ -69,6 +69,35 @@ If anything is behind, you get the notices again. Press the check button a secon
 
 The record lives in the plugin's own `data.json`, under `notifiedVersions`, as one entry per stream. One entry, not a history: it holds the newest version you were told about and nothing else, so it cannot grow however long the plugin runs.
 
+## Waiting out the hotfix window
+
+A `.0` release is often followed by a `.1` within days. If you would rather hear about a release only once it has survived that window, set a wait: the release stays out of the notice and the status bar count until it has been out that long. A newer release on the same stream starts the wait again, so a hotfix arriving on day six of a seven-day wait is itself held for seven days. The wait is counted per stream, from the date that stream got the release: the insider stream from its early-access date, the app and the installer from the public one.
+
+Nothing is hidden from you if you go and look. The details panel still lists a waiting release as an update, with a line saying when its wait ends. A release that no feed dates is never held, because a wait that cannot end would silently become a filter.
+
+```code-button
+---
+caption: Wait a week before announcing a release
+---
+await require('/demoSetup.ts').changeSettings(app, { releaseWaitInDays: 7 });
+```
+
+```code-button
+---
+caption: Show the details panel
+---
+require('/demoSetup.ts').runUpdateCheckNow(app);
+```
+
+If the newest release is less than a week old, the panel marks it as waiting and the status bar no longer counts it.
+
+```code-button
+---
+caption: Announce releases at once again
+---
+await require('/demoSetup.ts').changeSettings(app, { releaseWaitInDays: 0 });
+```
+
 ## How often it looks
 
 By default the plugin checks once an hour, which is what Obsidian's own updater does, plus once when Obsidian starts. You can make it slower, or turn scheduled checks off entirely and use the command when you feel like it — see [05 Settings](<./05 Settings.md>).

@@ -46,6 +46,10 @@ export class CheckForUpdatesCommandHandler extends GlobalCommandHandler {
 
   public override async execute(): Promise<void> {
     await this.updateCheckerComponent.check(true);
-    await showUpdateDetails({ app: this.app, result: this.updateCheckerComponent.lastResult });
+    await showUpdateDetails({
+      app: this.app,
+      releaseWaitInDays: this.updateCheckerComponent.releaseWaitInDays,
+      result: this.updateCheckerComponent.lastResult
+    });
   }
 }

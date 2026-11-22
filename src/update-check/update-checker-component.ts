@@ -36,6 +36,7 @@ import {
   resolveElectronStatus,
   resolveInstallerStreamStatus
 } from './release-streams.ts';
+import { checkIsReleaseHeld } from './release-wait.ts';
 
 /**
  * What the most recent SUCCESSFUL check found.
@@ -90,6 +91,15 @@ export class UpdateCheckerComponent extends ComponentEx {
    */
   public get lastResult(): null | UpdateCheckResult {
     return this._lastResult;
+  }
+
+  /**
+   * The release wait currently set, in days, read live so a changed setting applies at once.
+   *
+   * @returns The wait in days; `0` when it is off.
+   */
+  public get releaseWaitInDays(): number {
+    return this.pluginSettingsComponent.settings.releaseWaitInDays;
   }
 
   private readonly _debugger = getDebugger('app-update-notifier:update-checker');
@@ -173,8 +183,17 @@ export class UpdateCheckerComponent extends ComponentEx {
   }
 
   private async notifyNewVersions(statuses: readonly ReleaseStreamStatus[], electron: ElectronStatus, platform: PlatformSnapshot): Promise<void> {
+    const nowInMilliseconds = Date.now();
+
     for (const status of statuses) {
-      if (!status.isUpdateAvailable || status.latestVersion === null || this.pluginSettingsComponent.checkWasNotified(status.id, status.latestVersion)) {
+      // A release held by the release wait is not recorded as notified, so the first check after its
+      // wait ends announces it.
+      if (
+        !status.isUpdateAvailable
+        || status.latestVersion === null
+        || this.pluginSettingsComponent.checkWasNotified(status.id, status.latestVersion)
+        || checkIsReleaseHeld(status, this.releaseWaitInDays, nowInMilliseconds)
+      ) {
         continue;
       }
 

@@ -31,6 +31,8 @@ vi.mock('./update-details-modal.ts', () => ({
   showUpdateDetails: vi.fn(() => noopAsync())
 }));
 
+const MILLISECONDS_PER_DAY = 86_400_000;
+
 let app: AppOriginal;
 let settings: PluginSettings;
 let statusBarItemEl: HTMLElement;
@@ -85,6 +87,47 @@ describe('the status bar item', () => {
     expect(statusBarItemEl.getText()).toBe('Obsidian: 2 updates');
   });
 
+  it('should not count a release still inside the release wait, and say so in the tooltip', () => {
+    settings.releaseWaitInDays = 7;
+    lastResult = {
+      statuses: [
+        createStatus(ReleaseStreamId.App, true, Date.now() - MILLISECONDS_PER_DAY),
+        createStatus(ReleaseStreamId.Installer, true, Date.now() - 8 * MILLISECONDS_PER_DAY)
+      ]
+    };
+
+    loadComponent();
+
+    expect(statusBarItemEl.getText()).toBe('Obsidian: 1 update');
+    expect(statusBarItemEl.getAttr('aria-label')).toBe('1 new release is still inside the wait you set. Click for details.');
+  });
+
+  it('should read up to date when every update is still inside the release wait', () => {
+    settings.releaseWaitInDays = 3;
+    lastResult = {
+      statuses: [
+        createStatus(ReleaseStreamId.App, true, Date.now()),
+        createStatus(ReleaseStreamId.Installer, true, Date.now())
+      ]
+    };
+
+    loadComponent();
+
+    expect(statusBarItemEl.getText()).toBe('Obsidian: up to date');
+    expect(statusBarItemEl.hasClass('mod-warning')).toBe(false);
+    expect(statusBarItemEl.getAttr('aria-label')).toBe('2 new releases are still inside the wait you set. Click for details.');
+  });
+
+  it('should pass the release wait to the details panel', async () => {
+    settings.releaseWaitInDays = 14;
+    loadComponent();
+
+    statusBarItemEl.dispatchEvent(new MouseEvent('click'));
+    await waitForAllAsyncOperations();
+
+    expect(showUpdateDetails).toHaveBeenCalledWith({ app, releaseWaitInDays: 14, result: lastResult });
+  });
+
   it('should hide when the setting is off', () => {
     settings.shouldShowStatusBarItem = false;
 
@@ -118,7 +161,7 @@ describe('the status bar item', () => {
     statusBarItemEl.dispatchEvent(new MouseEvent('click'));
     await waitForAllAsyncOperations();
 
-    expect(showUpdateDetails).toHaveBeenCalledWith({ app, result: lastResult });
+    expect(showUpdateDetails).toHaveBeenCalledWith({ app, releaseWaitInDays: 0, result: lastResult });
   });
 
   it('should do nothing when refreshed before it is loaded', () => {
@@ -152,13 +195,14 @@ function createComponent(): StatusBarComponent {
   });
 }
 
-function createStatus(id: ReleaseStreamId, isUpdateAvailable: boolean): ReleaseStreamStatus {
+function createStatus(id: ReleaseStreamId, isUpdateAvailable: boolean, publishedAtInMilliseconds: null | number = null): ReleaseStreamStatus {
   return {
     changelogUrl: 'https://obsidian.md/changelog/',
     currentVersion: '1.13.6',
     id,
     isUpdateAvailable,
-    latestVersion: '1.13.7'
+    latestVersion: '1.13.7',
+    publishedAtInMilliseconds
   };
 }
 

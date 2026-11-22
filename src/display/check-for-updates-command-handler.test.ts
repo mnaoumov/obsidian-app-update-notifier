@@ -50,7 +50,7 @@ describe('CheckForUpdatesCommandHandler', () => {
   it('should show what the check found', async () => {
     await createHandler().execute();
 
-    expect(showUpdateDetails).toHaveBeenCalledWith({ app, result: lastResult });
+    expect(showUpdateDetails).toHaveBeenCalledWith({ app, releaseWaitInDays: 7, result: lastResult });
   });
 });
 
@@ -59,7 +59,8 @@ function createHandler(): CheckForUpdatesCommandHandler {
     app,
     updateCheckerComponent: castTo<UpdateCheckerComponent>(strictProxy({
       check,
-      lastResult
+      lastResult,
+      releaseWaitInDays: 7
     }))
   });
 }

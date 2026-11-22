@@ -9,7 +9,8 @@ import type { PluginSettings } from './plugin-settings.ts';
 import { checkIsAutoUpdateDisabled } from '../sources/platform-ex.ts';
 import {
   BetaStreamMode,
-  MIN_CHECK_INTERVAL_IN_MINUTES
+  MIN_CHECK_INTERVAL_IN_MINUTES,
+  RELEASE_WAIT_OPTIONS_IN_DAYS
 } from './plugin-settings.ts';
 
 export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
@@ -113,6 +114,25 @@ export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
                 });
               });
             }
+          }),
+          this.settingEx({
+            desc: createFragment((f) => {
+              f.appendText('How long a new release must have been out before you are told about it, so you hear about it after its usual hotfix window.');
+              f.createEl('br');
+              f.appendText('A newer release on the same stream starts the wait again. The details panel still lists a release that is waiting, with the date the wait ends.');
+            }),
+            name: 'Wait before announcing a release',
+            render: (setting) => {
+              setting.addDropdown((dropdown) => {
+                dropdown.addOptions(Object.fromEntries(RELEASE_WAIT_OPTIONS_IN_DAYS.map((days) => [String(days), describeReleaseWait(days)])));
+                this.bind({
+                  componentToPluginSettingsValueConverter: Number,
+                  pluginSettingsToComponentValueConverter: String,
+                  propertyName: 'releaseWaitInDays',
+                  valueComponent: dropdown
+                });
+              });
+            }
           })
         ]
       }),
@@ -149,4 +169,12 @@ function describeAutoUpdateState(): DocumentFragment {
 
     f.appendText('On. Obsidian will install updates on its own; this plugin still reports the installer and insider streams, which it does not.');
   });
+}
+
+function describeReleaseWait(days: number): string {
+  if (days === 0) {
+    return 'Do not wait';
+  }
+
+  return days === 1 ? '1 day' : `${String(days)} days`;
 }

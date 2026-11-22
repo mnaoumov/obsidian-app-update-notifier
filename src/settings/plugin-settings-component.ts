@@ -81,5 +81,7 @@ export class PluginSettingsComponent extends PluginSettingsComponentBase<PluginS
       const isValid = value === 0 || (Number.isSafeInteger(value) && value >= MIN_CHECK_INTERVAL_IN_MINUTES);
       return isValid ? '' : `Should be 0, or a whole number of minutes not below ${String(MIN_CHECK_INTERVAL_IN_MINUTES)}.`;
     });
+
+    this.registerValidator('releaseWaitInDays', (value) => Number.isSafeInteger(value) && value >= 0 ? '' : 'Should be a whole number of days, 0 or more.');
   }
 }

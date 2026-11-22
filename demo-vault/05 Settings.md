@@ -18,6 +18,8 @@ Every setting the plugin owns, by the key it is stored under in `data.json`, gro
 
 - `shouldShowStatusBarItem`
   - whether the status bar carries the item that says what is out of date. Defaults to on. Each new version is still announced once with a notice whatever this is set to.
+- `releaseWaitInDays`
+  - how many days a new release must have been out before it is announced or counted in the status bar. Defaults to `0`, which announces it at once; the settings tab offers `1`, `3`, `7` and `14`. A newer release on the same stream starts the wait again, and the details panel still lists a waiting release with the date its wait ends. [04 Being notified](<./04 Being notified.md>) has buttons to try it.
 
 ## Not a setting, but stored beside them
 
