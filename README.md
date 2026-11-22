@@ -64,10 +64,10 @@ Checks run once at startup and then hourly, matching Obsidian's own updater; the
 
 | Plugin | Features | How `App Update Notifier` differs |
 | --- | --- | --- |
-| [`Plugin Update Tracker`](https://community.obsidian.md/plugins/obsidian-plugin-update-tracker) | Community-plugin update tracking and risk assessment | Complementary updates: Obsidian app, Catalyst and installer releases only |
-| [`Update Radar`](https://community.obsidian.md/plugins/update-radar) | Plugin/theme update checks; release notes; abandoned-addon flags | Complementary updates: Obsidian releases rather than add-ons |
+| [`Plugin Update Tracker`](https://community.obsidian.md/plugins/obsidian-plugin-update-tracker) | Community-plugin update checks; release notes; update install; risk statistics; wait before showing; ignore a version | Complements it: watches Obsidian's own app, Catalyst and installer releases instead of plugins; never installs anything |
+| [`Update Radar`](https://community.obsidian.md/plugins/update-radar) | Community-plugin and theme update checks; release notes; update, rollback, snooze; abandoned-plugin flags | Complements it: watches Obsidian's own app, Catalyst and installer releases instead of add-ons; never installs anything |
 
-Last searched for similar plugins on 2026-10-26.
+Last searched for similar plugins on 2026-11-21.
 
 ## Installation
 
