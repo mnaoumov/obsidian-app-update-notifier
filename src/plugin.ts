@@ -1,3 +1,5 @@
+import type { WorkspaceRibbon } from 'obsidian';
+
 import { OpenBugReportCommandHandler } from '@mnaoumov/obsidian-lib/command-handlers/open-bug-report-command-handler';
 import { OpenDemoVaultCommandHandler } from '@mnaoumov/obsidian-lib/command-handlers/open-demo-vault-command-handler';
 import { PluginSettingsTabComponent } from '@mnaoumov/obsidian-lib/components/plugin-settings-tab-component';
@@ -5,8 +7,10 @@ import { PluginDataHandler } from '@mnaoumov/obsidian-lib/data-handler';
 import { PluginBase } from '@mnaoumov/obsidian-lib/plugin/plugin';
 import { PluginEventSourceImpl } from '@mnaoumov/obsidian-lib/plugin/plugin-event-source';
 import { PluginStatusBarItemRegistrar } from '@mnaoumov/obsidian-lib/status-bar-item-registrar';
+import { Platform } from 'obsidian';
 
 import { CheckForUpdatesCommandHandler } from './display/check-for-updates-command-handler.ts';
+import { MobileRibbonActionComponent } from './display/mobile-ribbon-action-component.ts';
 import { StatusBarComponent } from './display/status-bar-component.ts';
 import { PluginSettingsComponent as PluginSettingsComponentImpl } from './settings/plugin-settings-component.ts';
 import { PluginSettingsTab } from './settings/plugin-settings-tab.ts';
@@ -49,13 +53,27 @@ export class Plugin extends PluginBase {
       })
     );
 
+    // Mobile has no status bar, so it gets a ribbon action while an update is available.
+    const mobileRibbonActionComponent = Platform.isMobile
+      ? this.addChild(
+        new MobileRibbonActionComponent({
+          app: this.app,
+          getRibbon: (): WorkspaceRibbon => this.app.workspace.leftRibbon,
+          pluginId: this.manifest.id,
+          pluginSettingsComponent,
+          updateCheckerComponent
+        })
+      )
+      : null;
+
     /*
-     * The status bar item is hidden or shown by a setting, so it has to redraw when the settings are
-     * saved and not only when a check finishes — otherwise turning it back on leaves it invisible until
-     * the next check, up to an hour later.
+     * The status bar item and the ribbon action are hidden or shown by a setting, so they have to redraw
+     * when the settings are saved and not only when a check finishes — otherwise turning one back on
+     * leaves it invisible until the next check, up to an hour later.
      */
     pluginSettingsComponent.on('saveSettings', () => {
       statusBarComponent.refresh();
+      mobileRibbonActionComponent?.refresh();
     });
 
     await this.commandHandlerComponent.registerCommandHandlers(() => [

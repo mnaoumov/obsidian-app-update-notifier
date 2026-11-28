@@ -9,6 +9,7 @@ import type { ReleaseStreamStatus } from './release-streams.ts';
 import { ReleaseStreamId } from './release-streams.ts';
 import {
   checkIsReleaseHeld,
+  countUpdates,
   getReleaseWaitEndInMilliseconds
 } from './release-wait.ts';
 
@@ -31,6 +32,22 @@ describe('getReleaseWaitEndInMilliseconds', () => {
   it('should never hold a release no feed dates', () => {
     // A delay, never a filter: an undated release held until it is dated could be held forever.
     expect(getReleaseWaitEndInMilliseconds(createStatus({ publishedAtInMilliseconds: null }), 7)).toBeNull();
+  });
+});
+
+describe('countUpdates', () => {
+  it('should split the updates by the wait and skip the streams that are up to date', () => {
+    const statuses = [
+      createStatus(),
+      createStatus({ publishedAtInMilliseconds: PUBLISHED_AT - 10 * MILLISECONDS_PER_DAY }),
+      createStatus({ isUpdateAvailable: false })
+    ];
+
+    expect(countUpdates(statuses, 3, PUBLISHED_AT)).toEqual({ announcedCount: 1, heldCount: 1 });
+  });
+
+  it('should count nothing for a check with no streams', () => {
+    expect(countUpdates([], 3, PUBLISHED_AT)).toEqual({ announcedCount: 0, heldCount: 0 });
   });
 });
 

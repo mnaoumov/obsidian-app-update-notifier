@@ -49,6 +49,7 @@ Obsidian's version is three separate answers that move independently, and this p
 ### What it does with them
 
 - **A status bar item** showing what is behind, or **Obsidian: up to date**. Clicking it opens a panel listing every watched stream, what is installed against what is published, and a changelog link for each. Before the first successful check it says **not checked**, which is deliberately not dressed up as "up to date".
+- **A ribbon action on mobile, while an update is available.** Mobile has no status bar, so the ribbon gets an **Obsidian update available** action that opens the same panel. It goes away again once everything is up to date, and the **Show the ribbon action on mobile** setting turns it off.
 - **One notice per new version, ever.** A version already announced is never mentioned again — not on the next check, not after a restart.
 - **An optional wait before a release is announced.** Set it to 1, 3, 7 or 14 days and a new release stays out of the notice and the status bar count until it has been out that long, so you hear about `1.x.0` after its usual hotfix window. A newer release on the same stream starts the wait again. The panel still lists a waiting release, with the date its wait ends. The insider stream waits from the early-access date, the others from the public one. It is off by default.
 - **A changelog link on everything.** A version with no public `GitHub` release, which is the normal case for a Catalyst build, still resolves its changelog from Obsidian's changelog feed.

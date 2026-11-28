@@ -43,6 +43,7 @@ const EXPECTED_PROPERTY_NAMES = [
   'betaStreamMode',
   'shouldWatchInstallerStream',
   'shouldShowStatusBarItem',
+  'shouldShowMobileRibbonAction',
   'releaseWaitInDays'
 ];
 

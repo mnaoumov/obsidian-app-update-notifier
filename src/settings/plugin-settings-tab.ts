@@ -117,6 +117,23 @@ export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
           }),
           this.settingEx({
             desc: createFragment((f) => {
+              f.appendText('Mobile has no status bar, so while an update is available the ribbon gets an action that opens the details panel. It goes away again once everything is up to date.');
+              f.createEl('br');
+              f.appendText('Mobile only.');
+            }),
+            name: 'Show the ribbon action on mobile',
+            render: (setting) => {
+              setting.setDisabled(!Platform.isMobile);
+              setting.addToggle((toggle) => {
+                this.bind({
+                  propertyName: 'shouldShowMobileRibbonAction',
+                  valueComponent: toggle
+                });
+              });
+            }
+          }),
+          this.settingEx({
+            desc: createFragment((f) => {
               f.appendText('How long a new release must have been out before you are told about it, so you hear about it after its usual hotfix window.');
               f.createEl('br');
               f.appendText('A newer release on the same stream starts the wait again. The details panel still lists a release that is waiting, with the date the wait ends.');
