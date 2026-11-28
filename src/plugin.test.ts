@@ -18,11 +18,15 @@ interface ComponentModuleActual {
   readonly Component: new () => object;
 }
 
+interface RibbonActionHolder {
+  readonly getRibbon: () => unknown;
+}
+
 interface SaveSettingsListenerHolder {
   readonly saveSettingsListeners: (() => void)[];
 }
 
-const { refresh } = vi.hoisted(() => ({ refresh: vi.fn() }));
+const { refresh, refreshRibbonAction } = vi.hoisted(() => ({ refresh: vi.fn(), refreshRibbonAction: vi.fn() }));
 
 // Stub the plugin's OWN sibling modules, each extending the real test-mocks `Component` so the real
 // `PluginBase` lifecycle can load them as children without their heavy dependencies.
@@ -66,6 +70,26 @@ vi.mock('./display/status-bar-component.ts', async () => {
   return { StatusBarComponent };
 });
 
+vi.mock('./display/mobile-ribbon-action-component.ts', async () => {
+  const { Component } = await vi.importActual<ComponentModuleActual>('obsidian');
+  class MobileRibbonActionComponent extends Component {
+    public readonly getRibbon: () => unknown;
+
+    public refresh = refreshRibbonAction;
+
+    public constructor(params: RibbonActionHolder) {
+      super();
+      this.getRibbon = params.getRibbon;
+    }
+  }
+  return { MobileRibbonActionComponent };
+});
+
+// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
+import { Platform } from 'obsidian';
+
+// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
+import { MobileRibbonActionComponent } from './display/mobile-ribbon-action-component.ts';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { StatusBarComponent } from './display/status-bar-component.ts';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
@@ -84,8 +108,11 @@ const PLUGIN_MANIFEST: PluginManifest = {
   version: '1.0.0'
 };
 
+const IS_MOBILE_ORIGINAL = Platform.isMobile;
+
 beforeEach(() => {
   vi.clearAllMocks();
+  Platform.isMobile = IS_MOBILE_ORIGINAL;
 });
 
 describe('Plugin', () => {
@@ -130,6 +157,37 @@ describe('Plugin', () => {
     }
 
     expect(refresh).toHaveBeenCalledOnce();
+    plugin.unload();
+  });
+
+  it('should add no ribbon action on desktop, which has the status bar', async () => {
+    Platform.isMobile = false;
+    const plugin = new Plugin(createConfiguredApp(), PLUGIN_MANIFEST);
+    const addChildSpy = vi.spyOn(plugin, 'addChild');
+
+    await plugin.onload();
+
+    expect(addChildSpy.mock.calls.some((call) => call[0] instanceof MobileRibbonActionComponent)).toBe(false);
+    plugin.unload();
+  });
+
+  it('should add the ribbon action on mobile, and redraw it when the settings are saved', async () => {
+    Platform.isMobile = true;
+    const app = createConfiguredApp();
+    const plugin = new Plugin(app, PLUGIN_MANIFEST);
+    const addChildSpy = vi.spyOn(plugin, 'addChild');
+
+    await plugin.onload();
+
+    const addedChildren = addChildSpy.mock.calls.map((call) => call[0]);
+    const ribbonActionComponent = addedChildren.find((child) => child instanceof MobileRibbonActionComponent);
+    expect(castTo<RibbonActionHolder>(ribbonActionComponent).getRibbon()).toBe(app.workspace.leftRibbon);
+    const settingsComponent = addedChildren.find((child) => child instanceof PluginSettingsComponent);
+    for (const listener of castTo<SaveSettingsListenerHolder>(settingsComponent).saveSettingsListeners) {
+      listener();
+    }
+
+    expect(refreshRibbonAction).toHaveBeenCalledOnce();
     plugin.unload();
   });
 });

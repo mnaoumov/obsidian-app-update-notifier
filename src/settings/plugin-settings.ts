@@ -77,6 +77,12 @@ export class PluginSettings {
   public releaseWaitInDays = 0;
 
   /**
+   * Whether mobile gets a ribbon action, shown only while an update is available, since mobile has no
+   * status bar.
+   */
+  public shouldShowMobileRibbonAction = true;
+
+  /**
    * Whether the status bar carries an item showing what is out of date.
    */
   public shouldShowStatusBarItem = true;

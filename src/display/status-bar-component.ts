@@ -7,7 +7,7 @@ import { invokeAsyncSafely } from '@mnaoumov/typescript-lib/async';
 import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 import type { UpdateCheckerComponent } from '../update-check/update-checker-component.ts';
 
-import { checkIsReleaseHeld } from '../update-check/release-wait.ts';
+import { countUpdates } from '../update-check/release-wait.ts';
 import { showUpdateDetails } from './update-details-modal.ts';
 
 interface StatusBarComponentConstructorParams {
@@ -76,11 +76,11 @@ export class StatusBarComponent extends ComponentEx {
 
     // A release inside its wait is not counted, so the count moves when the notice does. The tooltip
     // still says it exists, because the panel the click opens lists it.
-    const releaseWaitInDays = this.pluginSettingsComponent.settings.releaseWaitInDays;
-    const nowInMilliseconds = Date.now();
-    const availableStatuses = result?.statuses.filter((status) => status.isUpdateAvailable) ?? [];
-    const heldCount = availableStatuses.filter((status) => checkIsReleaseHeld(status, releaseWaitInDays, nowInMilliseconds)).length;
-    const updateCount = availableStatuses.length - heldCount;
+    const { announcedCount: updateCount, heldCount } = countUpdates(
+      result?.statuses ?? [],
+      this.pluginSettingsComponent.settings.releaseWaitInDays,
+      Date.now()
+    );
     statusBarItemEl.setText(buildText(result === null, updateCount));
     statusBarItemEl.setAttr('aria-label', buildTooltip(result === null, updateCount, heldCount));
     statusBarItemEl.toggleClass('mod-warning', updateCount > 0);

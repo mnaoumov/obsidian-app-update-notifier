@@ -15,6 +15,21 @@ import type { ReleaseStreamStatus } from './release-streams.ts';
 const MILLISECONDS_PER_DAY = 86_400_000;
 
 /**
+ * How many updates a check holds, split by the release wait.
+ */
+export interface UpdateCounts {
+  /**
+   * Updates outside their wait, which the notice announces and the status bar counts.
+   */
+  readonly announcedCount: number;
+
+  /**
+   * Updates still inside their wait, which only the details panel lists.
+   */
+  readonly heldCount: number;
+}
+
+/**
  * Whether a stream's update is held back right now.
  *
  * @param status - The stream status.
@@ -25,6 +40,23 @@ const MILLISECONDS_PER_DAY = 86_400_000;
 export function checkIsReleaseHeld(status: ReleaseStreamStatus, releaseWaitInDays: number, nowInMilliseconds: number): boolean {
   const waitEnd = getReleaseWaitEndInMilliseconds(status, releaseWaitInDays);
   return waitEnd !== null && nowInMilliseconds < waitEnd;
+}
+
+/**
+ * Counts the updates in a set of stream statuses, split by the release wait.
+ *
+ * @param statuses - The stream statuses of one check.
+ * @param releaseWaitInDays - The wait setting. `0` switches the wait off.
+ * @param nowInMilliseconds - The current time.
+ * @returns The announced and held counts.
+ */
+export function countUpdates(statuses: readonly ReleaseStreamStatus[], releaseWaitInDays: number, nowInMilliseconds: number): UpdateCounts {
+  const availableStatuses = statuses.filter((status) => status.isUpdateAvailable);
+  const heldCount = availableStatuses.filter((status) => checkIsReleaseHeld(status, releaseWaitInDays, nowInMilliseconds)).length;
+  return {
+    announcedCount: availableStatuses.length - heldCount,
+    heldCount
+  };
 }
 
 /**

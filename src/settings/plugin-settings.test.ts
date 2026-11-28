@@ -30,6 +30,10 @@ describe('PluginSettings', () => {
       expect(new PluginSettings().shouldShowStatusBarItem).toBe(true);
     });
 
+    it('should show the mobile ribbon action, since mobile has no status bar', () => {
+      expect(new PluginSettings().shouldShowMobileRibbonAction).toBe(true);
+    });
+
     it('should announce a release at once, with no wait', () => {
       expect(new PluginSettings().releaseWaitInDays).toBe(0);
     });
